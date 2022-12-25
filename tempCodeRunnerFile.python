@@ -1,3 +1,0 @@
-s = "aabgaaa"
-if s[:1] == "aa":
-    print("jjj")
