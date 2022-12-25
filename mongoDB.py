@@ -23,10 +23,10 @@ def close(db):
 
 
 def admin_sign_in(db,username, password):
-        admin = db["admin"]
+        admin = db["users"]
 
         user = admin.find_one({"username": username})
-        if user and user["password"] == password:
+        if user and user["password"] == password and user["isAdmin"] == 1:
             return True
         else:
             return False
@@ -41,10 +41,10 @@ def client_sign_in(db,username, password):
         else:
             return False
 
-def add_user(db,username, password, email):
+def add_user(db,username, password):
         users = db["users"]
 
-        user = {"username": username, "password": password, "email" : email}
+        user = {"username": username, "password": password, "id": 1}#------------------------- toDo id
         users.insert_one(user)
 
 
@@ -73,8 +73,6 @@ def user_exists(db,username):
 
 
 def get_password(db,username):
-        client = MongoClient("mongodb://localhost:27017/")
-        db = client["mydatabase"]
         users = db["users"]
 
         user = users.find_one({"username": username})
@@ -85,8 +83,6 @@ def get_password(db,username):
 
 
 def get_email(db,username):
-        client = MongoClient("mongodb://localhost:27017/")
-        db = client["mydatabase"]
         users = db["users"]
 
         user = users.find_one({"username": username})
@@ -97,14 +93,12 @@ def get_email(db,username):
 
 
 def delete_user(db,username):
-        client = MongoClient("mongodb://localhost:27017/")
-        db = client["mydatabase"]
         users = db["users"]
 
         users.delete_one({"username": username})
 
 
-def sendMassge(db, room, username, message):
+def addMassge(db, room, username, message):
     collection = db["mycollection"]
     #cerrent time:
     current_time = datetime.datetime.now()
