@@ -35,7 +35,7 @@ def dlr(room_name,s):
         if room["name"] == room_name:
             rooms.remove(room)
     # send a confirmation message to the admin
-    s.send((b"Room deleted").encode())
+    s.send(("Room deleted").encode())
 
 
 def jnr(room_name,username,s):
