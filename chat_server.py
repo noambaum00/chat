@@ -106,27 +106,13 @@ def multi_threaded_client(client_socket):
             while True:
                 # receive the admin's command
                 command = get(client_socket)
-                commmmmmmend = command[:4]
+                text = command[:4]
                 
                 if command[0:4] == "crr:":
-                    room_name = command [4:]
-                    room = {"name": room_name, "clients": []}
-                    rooms.append(room)
-
-                    # send a confirmation message to the admin
-                    client_socket.send(("Room created").encode())
+                    crr(command[4:], client_socket)
 
                 elif command[:4] == "dlr:":
-                    # receive the name of the room to delete
-                    room_name = get(client_socket)
-
-                    # delete the room from the list of rooms
-                    for room in rooms:
-                        if room["name"] == room_name:
-                            rooms.remove(room)
-
-                    # send a confirmation message to the admin
-                    client_socket.send((b"Room deleted").encode())
+                    dlr(command[4:], client_socket)
 
                 elif command[:4] == "lsr:":
                     # send the list of rooms to the admin
@@ -137,86 +123,28 @@ def multi_threaded_client(client_socket):
                     client_socket.send(str(clients).encode())
                 
                 elif command[:4] == "jnr:":
-                    # receive the name of the room to join
-                    room_name = command[4:]
-
-                    # join the room
-                    for room in rooms:
-                        if room["name"] == room_name:
-                            room["clients"].append(username)
-
-                    # send a confirmation message to the user
-                    client_socket.send(("Room joined").encode())
+                    jnr(command[4:], username, client_socket)
 
                 elif command[:4] == "lvr:":
-                    # receive the name of the room to leave
-                    room_name = command[4:]
-
-                    # leave the room
-                    for room in rooms:
-                        if room["name"] == room_name:
-                            room["clients"].remove(username)
-
-                    # send a confirmation message to the user
-                    client_socket.send(("Room left").encode())
+                    lvr(command[4:], username, client_socket)
 
                 elif command[:5] == "lsur:":
-                    # receive the name of the room to list the users in
-                    room_name = get(client_socket)
-
-                    # send the list of users in the room to the admin
-                    for room in rooms:
-                        if room["name"] == room_name:
-                            client_socket.send(str(room["clients"]).encode())
+                    lsur(command[4:], client_socket)
 
                 elif command[:4] == "kcu:":
-                    # receive the username of the user to kick
-                    usernameToKick = command[4:]
-
-                    # kick the user
-                    for client in clients:
-                        if clients[client] == usernameToKick:
-                            client.close()
-                            del clients[client]
-                    # send a confirmation message to the admin
-                    client_socket.send('User : {usernameToKick} kicked')
+                    kcu(command[4:], client_socket)
 
                 elif command[:4] == "dlu:":
-                    # receive the username of the user to kick
-                    usernameToKick = command[4:]
-
-                    #delete username frome database
-                    #mongoDB.delete_user(conn, usernameToKick)
-                    client_socket.send('User : {usernameToKick} deleted')
+                    dlu(command[4:], client_socket)
 
                 elif command[:4] == "msg:":
-                    
-                    message = command[4:]
-
-                    # send the message to the room
-                    for room in rooms:
-                        if room["name"] == room_name:
-                            for client in room["clients"]:
-                                for client_socket in clients:
-                                    if clients[client_socket] == client:
-                                        client_socket.send(("admin>> " + message + "\n").encode())
-
-                    # send a confirmation message to the user
-                    client_socket.send(("Message sent").encode())
-
-
-                    #mongoDB.sendMassge(conn, room, username, message)
-
-
-
-
+                    ADmsg(command[4:], room_name,client_socket)
 
                 elif command[:4] == "ext:":
                     # close the admin's connection
                     client_socket.close()
                     break
 
-                #add massge sender.
 
         #elif mongoDB.client_sign_in(conn, username, password):
         else:   #if username == "user":
@@ -330,14 +258,84 @@ def get(s):
         a= s.recv(1024).decode().replace('\n\r', '')
     return a
 
+def send(s,a):
+    s.send((a).encode())
 
 
 
 
+def crr(room_name,s):
+    room = {"name": room_name, "clients": []}
+    rooms.append(room)
+    
+    # send a confirmation message to the admin
+    s.send(("Room created").encode())
 
 
+def dlr(room_name,s):
+    # delete the room from the list of rooms
+    for room in rooms:
+        if room["name"] == room_name:
+            rooms.remove(room)
+    # send a confirmation message to the admin
+    s.send((b"Room deleted").encode())
 
 
+def jnr(room_name,username,s):
+    # join the room
+    for room in rooms:
+        if room["name"] == room_name:
+            room["clients"].append(username)
+    # send a confirmation message to the user
+    s.send(("Room joined").encode())
+
+
+def lvr(room_name, username,s):
+    # leave the room
+    for room in rooms:
+        if room["name"] == room_name:
+            room["clients"].remove(username)
+
+    # send a confirmation message to the user
+    s.send(("Room left").encode())
+
+
+def lsur(room_name,s):
+    # send the list of users in the room to the admin
+    for room in rooms:
+        if room["name"] == room_name:
+            s.send(str(room["clients"]).encode())
+
+
+def kcu(usernameToKick, s):
+    # kick the user
+    for client in clients:
+        if clients[client] == usernameToKick:
+            client.close()
+            del clients[client]
+    # send a confirmation message to the admin
+    s.send('User : {usernameToKick} kicked')
+
+
+def dlu(usernameToKick,s):
+    #delete username frome database
+    #mongoDB.delete_user(conn, usernameToDelete)
+    s.send('User : {usernameToDelete} deleted')
+
+def ADmsg(message, room_name ,s):
+
+    # send the message to the room
+    for room in rooms:
+        if room["name"] == room_name:
+            for client in room["clients"]:
+                for client_socket in clients:
+                    if clients[client_socket] == client:
+                        client_socket.send(("admin>> " + message + "\n").encode())
+
+    # send a confirmation message to the user
+    s.send(("Message sent").encode())
+
+    #mongoDB.sendMassge(conn, room, username, message)
 
 
 try:
