@@ -147,6 +147,10 @@ def multi_threaded_client(client_socket):
             # clients and set the user's status to "user"
             clients[client_socket] = username
             client_socket.send(("user").encode())
+            
+            #join menu
+            room_name = "menu"
+            jnr(room_name, username, client_socket)
 
             # receive the user's commands and act on them
             while True:

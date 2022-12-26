@@ -114,5 +114,5 @@ def allowsUserInRoom(username):#toDo
 
 
 def get_rooms():#toDo
-    return["menu","room1","room2"]
+    return[{'name': 'menu', 'clients': []}]
 
