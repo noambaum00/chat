@@ -42,9 +42,9 @@ def main():
     # bind to the port
     server_socket.bind((host, port))
 
-    print("NIND")
+    print("BIND")
 
-    # queue up to 5 requests
+    # queue up to 50 requests
     server_socket.listen(50)
 
     print("LISENING")
@@ -148,8 +148,8 @@ def multi_threaded_client(client_socket):
         clients[client_socket] = username
         client_socket.send(("user").encode())
             
-        #join menu
-        room_name = "menu"
+        #join loby
+        room_name = "loby"
         jnr(room_name, username, client_socket)
 
         # receive the user's commands and act on them
@@ -174,8 +174,8 @@ def multi_threaded_client(client_socket):
 
             elif command[:4] == "msg:":
                     
-                message = command[4:]
-                msg(command[4:], room_name, client_socket)
+                message =username + ": " + command[4:]
+                msg(message, room_name, client_socket, clients)
             
             else:
                 send(client_socket, command + " : commend not found")
