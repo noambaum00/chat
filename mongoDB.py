@@ -113,6 +113,6 @@ def allowsUserInRoom(username):#toDo
     pass
 
 
-def returnRooms():#toDo
-    pass
+def get_rooms():#toDo
+    return["menu","room1","room2"]
 
