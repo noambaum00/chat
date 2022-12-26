@@ -109,8 +109,9 @@ def addMassge(db, room, username, message):
     # Insert document into collection
     collection.insert_one(doc)
 
+
 def allowsUserInRoom(username):#toDo
-    pass
+    return True
 
 
 def get_rooms():#toDo
