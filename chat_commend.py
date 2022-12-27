@@ -12,6 +12,7 @@ rooms = mongoDB.get_rooms()
 
 
 
+
 def lsr(s):
     # send the list of rooms to the admin
     s.send(str(rooms).encode())

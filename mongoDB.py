@@ -34,6 +34,12 @@ def sign_in(db,username, password):
 def isadmin(username):
     return username == "root"
     
+    users = db["users"]
+
+    user = users.find_one({"username": username})
+    return user["isadmin"]
+
+    
 
 def add_user(db,username, password):
         users = db["users"]
@@ -48,6 +54,18 @@ def change_password(db, username, old_password, new_password):
 
         user = users.find_one({"username": username})
         if user and user["password"] == old_password:
+            user["password"] = new_password
+            users.update_one({"username": username}, {"$set": user})
+            return True
+        else:
+            return False
+
+
+def admin_change_password(db, username, new_password):
+        users = db["users"]
+
+        user = users.find_one({"username": username})
+        if user:
             user["password"] = new_password
             users.update_one({"username": username}, {"$set": user})
             return True

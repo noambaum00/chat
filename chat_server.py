@@ -27,7 +27,8 @@ ADMIN_COMMENDS= """
 
 def main():
     #connect db
-    #conn = mongoDB.init("mongodb+srv://noambaum:152433qwe@cluster0.siz7qr0.mongodb.net/?retryWrites=true&w=majority")
+    #db = mongoDB.init("mongodb+srv://noambaum:152433qwe@cluster0.siz7qr0.mongodb.net/?retryWrites=true&w=majority")
+    
 
     # create a socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -68,7 +69,6 @@ def main():
         start_new_thread(multi_threaded_client, (client_socket, ))
         ThreadCount += 1
         print('Thread Number: ' + str(ThreadCount))
-    ServerSideSocket.close()
 
 
 def multi_threaded_client(client_socket):
@@ -76,13 +76,14 @@ def multi_threaded_client(client_socket):
     # send a thank you message to the client
     client_socket.send(("Thank you for connecting").encode())
 
+    """
     client_socket.send(("Always wanted your data security to be thrown out the window?\n").encode())
     client_socket.send(("Always looking for the most unreliable chat?\n").encode())
     client_socket.send(("So that's exactly why we founded '@@@'\n").encode())
     client_socket.send(("With technology from the 70's.\n").encode())
     client_socket.send(("Zero data security.\n").encode())
     client_socket.send(("And the sql server is open to all.\n").encode())
-      
+    """      
     # get the client's username and password
     client_socket.send(("sooo... what your name is? ").encode())
 
@@ -128,6 +129,19 @@ def multi_threaded_client(client_socket):
 
                 elif command[:4] == "dlu:":
                     dlu(command[4:], client_socket)
+                
+                """
+                elif command[:5] == "achp:":
+                    command = command[:5].split(",")
+                    if mongoDB.admin_change_password(db, command[1], command[2]):
+                        # Do something if the password was successfully updated
+                        client_socket.send(("Your password has been changed.").decode())
+                    else:
+                        # Do something if the password change failed
+                        client_socket.send(("Please try again.").decode())
+
+                """              
+                
 
 
 
@@ -160,14 +174,17 @@ def multi_threaded_client(client_socket):
                 return
 
 
+
+
             else:
                 send(client_socket, command + " : commend not found")
             
 
             """
             elif command[:4] == "chp:":
-                # Example usage 
-                if mongoDB.change_password(conn, username, password, 'new_password'):
+                command = command[:4].split(",")
+
+                if mongoDB.change_password(conn, username, command[1], command[2]):
                 # Do something if the password was successfully updated
                     client_socket.send(("Your password has been changed.").decode())
                 else:
@@ -181,7 +198,7 @@ def multi_threaded_client(client_socket):
 
 """
         #wromg password massge.
-        if mongoDB.user_exists(conn, username):
+        if mongoDB.user_exists(db, username):
                 client_socket.send(("wrong password.\n pleas try agaim").encode())
 
         #simg up
@@ -194,7 +211,7 @@ def multi_threaded_client(client_socket):
                 #sent email with code. cansled
 
                 #add user to database.
-                mongoDB.add_user(conn, username, password, email)
+                mongoDB.add_user(db, username, password, email)
     """
 
 
