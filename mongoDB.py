@@ -20,19 +20,8 @@ def close(db):
         # Close connection to server
         client.close()
 
-
-
-def admin_sign_in(db,username, password):
-        admin = db["users"]
-
-        user = admin.find_one({"username": username})
-        if user and user["password"] == password and user["isAdmin"] == 1:
-            return True
-        else:
-            return False
-
             
-def client_sign_in(db,username, password):
+def sign_in(db,username, password):
         users = db["users"]
 
         user = users.find_one({"username": username})
@@ -40,6 +29,11 @@ def client_sign_in(db,username, password):
             return True
         else:
             return False
+
+
+def isadmin(username):
+    return username == "root"
+    
 
 def add_user(db,username, password):
         users = db["users"]

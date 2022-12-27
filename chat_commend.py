@@ -44,7 +44,7 @@ def jnr(room_name,username,s):
         if room["name"] == room_name:
             room["clients"].append(username)
     # send a confirmation message to the user
-    s.send(("Room joined").encode())
+    s.send((room_name + " joined\n").encode())
 
 
 def lvr(room_name, username,s):
@@ -79,7 +79,8 @@ def dlu(usernameToKick,s):
     #mongoDB.delete_user(conn, usernameToDelete)
     s.send('User : {usernameToDelete} deleted')
 
-def ADmsg(message, room_name ,s, clients):
+
+def msg(message, room_name ,s, clients, isadmin):
 
     # send the message to the room
     for room in rooms:
@@ -87,23 +88,10 @@ def ADmsg(message, room_name ,s, clients):
             for client in room["clients"]:
                 for client_socket in clients:
                     if clients[client_socket] == client:
-                        client_socket.send(("admin>> " + message + "\n").encode())
-
-    # send a confirmation message to the user
-    s.send(("Message sent").encode())
-
-    #mongoDB.sendMassge(conn, room, username, message)
-
-
-def msg(message, room_name ,s, clients):
-
-    # send the message to the room
-    for room in rooms:
-        if room["name"] == room_name:
-            for client in room["clients"]:
-                for client_socket in clients:
-                    if clients[client_socket] == client:
-                        client_socket.send((message + "\n").encode())
+                        if isadmin:
+                            client_socket.send(("admin>> " + message + "\n").encode())
+                        else:
+                            client_socket.send((message + "\n").encode())
 
     # send a confirmation message to the user
     s.send(("Message sent").encode())

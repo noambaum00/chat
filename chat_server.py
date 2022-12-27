@@ -35,7 +35,7 @@ def main():
     # get local machine name
     host = "127.0.0.1"
 
-    port = 23
+    port = 585
 
     print("STSRT")
 
@@ -90,63 +90,18 @@ def multi_threaded_client(client_socket):
     client_socket.send(("and what your passward?").encode())
     password = get(client_socket)
 
-    # check if the user is an admin
-    if username == "root": #mongoDB.admin_sign_in(conn, username, password):
-    # if the user is an admin, add the user to the list of connected
-    # clients and set the user's status to "admin"
-        clients[client_socket] = username
-            
-        client_socket.send(("admin \n").encode())
+    isadmin = mongoDB.isadmin(username)
 
-        # receive the admin's commands and act on them
-        while True:
-            # receive the admin's command
-            command = get(client_socket)
-            text = command[:4]
+    #if mongoDB.sign_in(conn, username, password):
+    if True:
+        if isadmin == True:
+            client_socket.send(("admin\n").encode())
+        else:
+            client_socket.send(("user\n").encode())
 
-            if command[:4] == "lsr:":
-                lsr(client_socket)
-
-            elif command[:4] == "lsu:":
-                lsu(client_socket,clients)
-
-            elif command[0:4] == "crr:":
-                crr(command[4:], client_socket)
-
-            elif command[:4] == "dlr:":
-                dlr(command[4:], client_socket)
-                
-            elif command[:4] == "jnr:":
-                room_name = command[4:]
-                jnr(room_name, username, client_socket)
-
-            elif command[:4] == "lvr:":
-                lvr(command[4:], username, client_socket)
-
-            elif command[:5] == "lsur:":
-                lsur(command[4:], client_socket)
-
-            elif command[:4] == "kcu:":
-                kcu(command[4:], client_socket, clients)
-
-            elif command[:4] == "dlu:":
-                dlu(command[4:], client_socket)
-
-            elif command[:4] == "msg:":
-                ADmsg(command[4:], room_name,client_socket, clients, clients)
-
-            elif command[:4] == "ext:":
-                # close the admin's connection
-                client_socket.close()
-                break
-
-
-    #elif mongoDB.client_sign_in(conn, username, password):
-    else:
         # if the user is not an admin, add the user to the list of connected
         # clients and set the user's status to "user"
         clients[client_socket] = username
-        client_socket.send(("user").encode())
             
         #join loby
         room_name = "loby"
@@ -156,6 +111,25 @@ def multi_threaded_client(client_socket):
         while True:
             # receive the user's command
             command = get(client_socket)
+
+            if isadmin:
+                if command[:4] == "lsu:":
+                    lsu(client_socket,clients)
+
+                elif command[0:4] == "crr:":
+                    crr(command[4:], client_socket)
+
+                elif command[:4] == "dlr:":
+                    dlr(command[4:], client_socket)
+                    
+
+                elif command[:4] == "kcu:":
+                    kcu(command[4:], client_socket, clients)
+
+                elif command[:4] == "dlu:":
+                    dlu(command[4:], client_socket)
+
+
 
             if command[:4] == "lsr:":
                 lsr(client_socket)
@@ -176,13 +150,22 @@ def multi_threaded_client(client_socket):
                     
                 message =username + ": " + command[4:]
                 msg(message, room_name, client_socket, clients)
-            
+
+            elif command[:4] == "hlp":
+                client_socket.send(HELP_MASSAGE.encode())
+
+            elif command[:4] == "ext:":
+                # close the admin's connection
+                client_socket.close()
+                return
+
+
             else:
                 send(client_socket, command + " : commend not found")
             
 
             """
-            elif command == "change_password":
+            elif command[:4] == "chp:":
                 # Example usage 
                 if mongoDB.change_password(conn, username, password, 'new_password'):
                 # Do something if the password was successfully updated
@@ -191,12 +174,7 @@ def multi_threaded_client(client_socket):
                 # Do something if the password change failed
                     client_socket.send(("Please try again.").decode())
 
-            elif command == "exit":
-                # close the user's connection
-                client_socket.close()
-                break
-
-            elif command == "help":
+            elif command == "hlp":
                 client_socket.send(HELP_MASSAGE.encode())
 
 """
@@ -225,7 +203,7 @@ def multi_threaded_client(client_socket):
 def get(s):
     a = ''
     while(len(a) < 3):
-        a= s.recv(1024).decode().replace('\n\r', '')
+        a= s.recv(1024).decode().replace('\r\n', '')
     return a
 
 def send(s,a):
