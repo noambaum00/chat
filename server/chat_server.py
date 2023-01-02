@@ -72,18 +72,12 @@ def main():
 
 
 def multi_threaded_client(client_socket):
+    global stop_threads
+    stop_threads = False
 
     # send a thank you message to the client
     client_socket.send(("Thank you for connecting").encode())
 
-    """
-    client_socket.send(("Always wanted your data security to be thrown out the window?\n").encode())
-    client_socket.send(("Always looking for the most unreliable chat?\n").encode())
-    client_socket.send(("So that's exactly why we founded '@@@'\n").encode())
-    client_socket.send(("With technology from the 70's.\n").encode())
-    client_socket.send(("Zero data security.\n").encode())
-    client_socket.send(("And the sql server is open to all.\n").encode())
-    """      
     # get the client's username and password
     client_socket.send(("sooo... what your name is? ").encode())
 
@@ -110,10 +104,16 @@ def multi_threaded_client(client_socket):
 
         # receive the user's commands and act on them
         while True:
+            if stop_threads == True:
+                break
+            
             # receive the user's command
             command = get(client_socket)
 
+            error_chack = False
+
             if isadmin:
+
                 if command[:4] == "lsu:":
                     lsu(client_socket,clients)
 
@@ -139,7 +139,8 @@ def multi_threaded_client(client_socket):
                         mongoDB.deleteAll()
                     else:
                         send(client_socket, "wrong passward")
-                
+                else:
+                    error_chack = True
                 """
                 elif command[:5] == "achp:":
                     command = command[:5].split(",")
@@ -153,9 +154,10 @@ def multi_threaded_client(client_socket):
                 """              
                 
 
+            if isadmin==False:
+                error_chack = False
 
-
-            if command[:4] == "lsr:":
+            elif command[:4] == "lsr:":
                 lsr(client_socket)
 
             elif command[:4] == "jnr:":
@@ -173,7 +175,7 @@ def multi_threaded_client(client_socket):
             elif command[:4] == "msg:":
                     
                 message =username + ": " + command[4:]
-                msg(message, room_name, client_socket, clients)
+                msg(message, room_name, client_socket, clients, isadmin)
 
             elif command[:4] == "hlp":
                 client_socket.send(HELP_MASSAGE.encode())
@@ -183,11 +185,13 @@ def multi_threaded_client(client_socket):
                 client_socket.close()
                 return
 
-
-
-
             else:
-                #send(client_socket, command + " : commend not found")
+                error_chack = True
+
+
+
+            if error_chack == True:
+                send(client_socket, command + " : not found")
                 pass
             
 
@@ -229,10 +233,14 @@ def multi_threaded_client(client_socket):
 
 
 def get(s):
-    a = ''
-    while(len(a) < 3):
-        a= s.recv(1024).decode().replace('\r\n', '')
-    return a
+    try:
+        a = ''
+        while(len(a) < 3):
+            a= s.recv(1024).decode().replace('\r\n', '')
+        return a
+    except ConnectionResetError:
+        stop_threads = True
+
 
 def send(s,a):
     s.send((a).encode())
