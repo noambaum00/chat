@@ -130,6 +130,16 @@ def multi_threaded_client(client_socket):
                 elif command[:4] == "dlu:":
                     dlu(command[4:], client_socket)
                 
+                elif command[:4] == "cls:":
+                    mongoDB.close()
+                    os.close()
+
+                elif command[:5] == "dlta":
+                    if command[5:] == "secretPassward":
+                        mongoDB.deleteAll()
+                    else:
+                        send(client_socket, "wrong passward")
+                
                 """
                 elif command[:5] == "achp:":
                     command = command[:5].split(",")
@@ -177,7 +187,8 @@ def multi_threaded_client(client_socket):
 
 
             else:
-                send(client_socket, command + " : commend not found")
+                #send(client_socket, command + " : commend not found")
+                pass
             
 
             """

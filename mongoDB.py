@@ -129,3 +129,18 @@ def allowsUserInRoom(username):#toDo
 def get_rooms():#toDo
     return[{'name': 'loby', 'clients': []}]
 
+def deleteAll():
+    pass
+
+
+
+
+"""
+def delete_all_data(client, database_name, collection_name):
+    db = client[database_name]
+    collection = db[collection_name]
+
+    # Delete all documents in the collection
+    result = collection.delete_many({})
+    print(f"Deleted {result.deleted_count} documents.")
+"""
