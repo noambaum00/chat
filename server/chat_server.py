@@ -251,4 +251,4 @@ def send(s,a):
 try:
     main()
 except:
-    print("error")
+    print(error)

@@ -25,7 +25,7 @@ def send(event=None):
     msg = myMsg.get()
     myMsg.set("")
     clientSocket.send(bytes(msg,'utf8'))
-    if msg == "'exit'":
+    if msg == "'ext:'":
         clientSocket.close()
         cleanAndClose()
         top.quit()
@@ -38,6 +38,7 @@ def cleanAndClose(event=None):
     send()
     top.destroy()
     stop = True
+
 
 if __name__ == '__main__':
     top = tkinter.Tk()
