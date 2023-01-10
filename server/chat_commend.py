@@ -51,14 +51,13 @@ def jnr(room_name,username,s):
 def lvr(room_name, username,s):
     # leave the room
     for room in rooms:
-        if room["name"] == room_name:
-            room["clients"].remove(username)
+        room["clients"].remove(username)
 
     # send a confirmation message to the user
     s.send(("Room left").encode())
 
 
-def lsur(room_name,s):
+def lcur(room_name,s):
     # send the list of users in the room to the admin
     for room in rooms:
         if room["name"] == room_name:

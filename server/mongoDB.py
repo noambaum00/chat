@@ -39,7 +39,11 @@ def isadmin(username):
     user = users.find_one({"username": username})
     return user["isadmin"]
 
-    
+def isroomadmin():#todo
+    pass
+
+def addtomyrooms():#todo
+    pass
 
 def add_user(db,username, password):
         users = db["users"]
@@ -110,6 +114,10 @@ def delete_user(db,username):
         users.delete_one({"username": username})
 
 
+def deleteroom():#todo
+    pass
+
+
 def addMassge(db, room, username, message):
     collection = db["mycollection"]
     #cerrent time:
@@ -129,7 +137,7 @@ def allowsUserInRoom(username):#toDo
 def get_rooms():#toDo
     return[{'name': 'loby', 'clients': []}]
 
-def deleteAll():
+def deleteAll():#todo
     pass
 
 
