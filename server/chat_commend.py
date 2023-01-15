@@ -48,10 +48,13 @@ def jnr(room_name,username,s):
     s.send((room_name + " joined\n").encode())
 
 
-def lvr(room_name, username,s):
+def lvr(username,s):
     # leave the room
     for room in rooms:
-        room["clients"].remove(username)
+        try:
+            room.remove(username)
+        except:
+            pass
 
     # send a confirmation message to the user
     s.send(("Room left").encode())

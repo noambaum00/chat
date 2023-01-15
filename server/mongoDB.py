@@ -114,7 +114,7 @@ def delete_user(db,username):
         users.delete_one({"username": username})
 
 
-def deleteroom():#todo
+def deleteroom():#todo move room to arcive.
     pass
 
 
@@ -135,13 +135,17 @@ def allowsUserInRoom(username):#toDo
 
 
 def get_rooms():#toDo
-    return[{'name': 'loby', 'clients': []}]
+    return[{'name': 'loby'}]
 
 def deleteAll():#todo
     pass
 
 
+def listusers():#todo
+    pass
 
+def listuses():
+    pass
 
 """
 def delete_all_data(client, database_name, collection_name):
