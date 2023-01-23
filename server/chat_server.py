@@ -130,7 +130,7 @@ def multi_threaded_client(client_socket):
                     elif command[:4] == "dlu:":
                         dlu(command[4:], client_socket)
                     
-                    elif command[:4] == "cls:":
+                    elif command[:4] == "ext:":
                         mongoDB.close()
                         os.close()
 
