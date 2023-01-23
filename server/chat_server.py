@@ -1,4 +1,4 @@
-import telnetlib
+import socket
 #import mongoDB
 import os
 from _thread import *
@@ -31,8 +31,7 @@ def main():
     
 
     # create a socket object
-    server_socket = telnetlib.Telnet()
-
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # get local machine name
     host = "127.0.0.1"
@@ -74,120 +73,124 @@ def main():
 
 def multi_threaded_client(client_socket):
     
+    global stop_threads
+    stop_threads = False
     # send a thank you message to the client
-    client_socket.write(("Thank you for connecting").encode())
+    client_socket.send(("Thank you for connecting").encode())
 
     # get the client's username and password
-    client_socket.write(("sooo... what your name is? ").encode())
+    client_socket.send(("sooo... what your name is? ").encode())
 
     username = get(client_socket)
-    client_socket.write(("and what your passward?").encode())
+    client_socket.send(("and what your passward?").encode())
     password = get(client_socket)
 
     isadmin = mongoDB.isadmin(username)
-    if isadmin == True:
-        client_socket.write(("admin\n").encode())
-    else:
-        client_socket.write(("user\n").encode())
+    #if mongoDB.sign_in(conn, username, password):
+    if True:
+        if isadmin == True:
+            client_socket.send(("admin\n").encode())
+        else:
+            client_socket.send(("user\n").encode())
 
-    # if the user is not an admin, add the user to the list of connected
-    # clients and set the user's status to "user"
-    clients[client_socket] = username
-            
-    #join loby
-    room_name = "loby"
-    jnr(room_name, username, client_socket)
+        # if the user is not an admin, add the user to the list of connected
+        # clients and set the user's status to "user"
+        clients[client_socket] = username
+                
+        #join loby
+        room_name = "loby"
+        jnr(room_name, username, client_socket)
 
-    # receive the user's commands and act on them
-    while True:
-        try:
+        # receive the user's commands and act on them
+        while True:
+            try:
+                if stop_threads == True:
+                    break
+                
+                # receive the user's command
+                command = get(client_socket)
 
-            # receive the user's command
-            command = get(client_socket)
+                error_chack = False
 
-            error_chack = False
+                if isadmin:
 
-            if isadmin:
+                    if command[:4] == "lsu:":
+                        lsu(client_socket,clients)
 
-                if command[:4] == "lsu:":
-                    lsu(client_socket,clients)
-
-                elif command[0:4] == "crr:":
+                    elif command[0:4] == "crr:":
                         crr(command[4:], client_socket)
 
-                elif command[:4] == "dlr:":
+                    elif command[:4] == "dlr:":
                         dlr(command[4:], client_socket)
                         
 
-                elif command[:4] == "kcu:":
+                    elif command[:4] == "kcu:":
                         kcu(command[4:], client_socket, clients)
 
-                elif command[:4] == "dlu:":
+                    elif command[:4] == "dlu:":
                         dlu(command[4:], client_socket)
                     
-                elif command[:4] == "cls:":
+                    elif command[:4] == "cls:":
                         mongoDB.close()
                         os.close()
 
-                elif command[:5] == "dlta":
+                    elif command[:5] == "dlta":
                         if command[5:] == "secretPassward":
                             mongoDB.deleteAll()
                         else:
                             send(client_socket, "wrong passward")
-                else:
-                    error_chack = True
-                """
-                elif command[:5] == "achp:":
-                    command = command[:5].split(",")
-                    if mongoDB.admin_change_password(db, command[1], command[2]):
-                        # Do something if the password was successfully updated
-                        client_socket.send(("Your password has been changed.").decode())
                     else:
-                        # Do something if the password change failed
-                        client_socket.send(("Please try again.").decode())
+                        error_chack = True
+                    """
+                    elif command[:5] == "achp:":
+                        command = command[:5].split(",")
+                        if mongoDB.admin_change_password(db, command[1], command[2]):
+                            # Do something if the password was successfully updated
+                            client_socket.send(("Your password has been changed.").decode())
+                        else:
+                            # Do something if the password change failed
+                            client_socket.send(("Please try again.").decode())
 
-                """
+                    """
                     
 
-            if isadmin==False:
-                error_chack = False
 
-            elif command[:4] == "lsr:":
+                if command[:4] == "lsr:":
                     lsr(client_socket)
 
-            elif command[:4] == "jnr:":
+                elif command[:4] == "jnr:":
                     if mongoDB.allowsUserInRoom(username) == True:
                         room_name = command[4:]
                         jnr(room_name,username,client_socket)
                     else:
                         send(client_socket, "you not allow in her.\n")
-            elif command[:4] == "lvr:":
+                elif command[:4] == "lvr:":
                     lvr(username,client_socket)
 
-            elif command[:5] == "lcur:":
+                elif command[:5] == "lcur:":
                     lcur(room_name, client_socket)
 
-            elif command[:4] == "msg:":
+                elif command[:4] == "msg:":
                         
                     message =username + ": " + command[4:]
                     msg(message, room_name, client_socket, clients, isadmin)
 
-            elif command[:4] == "hlp:":
-                    send(client_socket, HELP_MASSAGE)
+                elif command[:4] == "hlp":
+                    client_socket.send(HELP_MASSAGE.encode())
 
-            elif command[:4] == "ext:":
+                elif command[:4] == "ext:":
                     # close the admin's connection
                     client_socket.close()
                     return
 
-            else:
+                else:
                     error_chack = True
 
 
 
-            if error_chack == False:
-                send(client_socket, command + " : not found")
-                pass
+                if error_chack == True:
+                    send(client_socket, command + " : not found")
+                    pass
                 
 
                 """
@@ -196,27 +199,30 @@ def multi_threaded_client(client_socket):
 
                     if mongoDB.change_password(conn, username, command[1], command[2]):
                     # Do something if the password was successfully updated
-                        client_socket.write(("Your password has been changed.").decode())
+                        client_socket.send(("Your password has been changed.").decode())
                     else:
                     # Do something if the password change failed
-                        client_socket.write(("Please try again.").decode())
+                        client_socket.send(("Please try again.").decode())
+
+                elif command == "hlp":
+                    client_socket.send(HELP_MASSAGE.encode())
 
                 """
-        except EOFError:
-            client_socket.close()
-            break
+            except Exception as e:
+                print(e)
+                lvr(username,client_socket)
 
 """
             #wromg password massge.
             if mongoDB.user_exists(db, username):
-                    client_socket.write(("wrong password.\n pleas try agaim").encode())
+                    client_socket.send(("wrong password.\n pleas try agaim").encode())
 
             #simg up
             else:
-                client_socket.write(("do you want to sing up(y/n)? ").encode())
+                client_socket.send(("do you want to sing up(y/n)? ").encode())
                 ans = get(client_socket)
                 if ans == "y":
-                    client_socket.write(("what yout email is? ").encode())
+                    client_socket.send(("what yout email is? ").encode())
                     email = get(client_socket)
                     #sent email with code. cansled
 
@@ -228,11 +234,17 @@ def multi_threaded_client(client_socket):
 
 
 def get(s):
-    return s.read_until(b'\n').strip()
+    try:
+        a = ''
+        while(len(a) < 3):
+            a= s.recv(1024).decode().replace('\r\n', '')
+        return a
+    except ConnectionResetError:
+        stop_threads = True
 
 
 def send(s,a):
-    s.write((a).encode())
+    s.send((a).encode())
 
 
 

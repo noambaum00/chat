@@ -135,7 +135,7 @@ def allowsUserInRoom(username):#toDo
 
 
 def get_rooms():#toDo
-    return[{'name': 'loby'}]
+    return[{'name': 'loby','clients': []}]
 
 def deleteAll():#todo
     pass
