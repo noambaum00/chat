@@ -3,26 +3,21 @@ import datetime
 
 
 
-global db
-global client
 
-def __init__(self) -> None:
-    pass
+def __init__(self, server) -> None:
+    self.client = MongoClient(server)
+    self.db = self.client["Cluster0"]
+    return self.db
 
-
-def init(server):
-    client = MongoClient(server)
-    db = client["Cluster0"]
-    return db
         
 
 def close(db):
         # Close connection to server
-        client.close()
+        self.client.close()
 
             
-def sign_in(db,username, password):
-        users = db["users"]
+def sign_in(self, username, password):
+        users = self.db["users"]
 
         user = users.find_one({"username": username})
         if user and user["password"] == password:
@@ -31,22 +26,23 @@ def sign_in(db,username, password):
             return False
 
 
-def isadmin(username):
+def isadmin(self, username):
     return username == "root"
     
-    users = db["users"]
+    users = self.db["users"]
 
     user = users.find_one({"username": username})
     return user["isadmin"]
 
-def isroomadmin():#todo
+def isroomadmin(self, username, room):#todo
+    
     pass
 
 def addtomyrooms():#todo
     pass
 
-def add_user(db,username, password):
-        users = db["users"]
+def add_user(self,username, password):
+        users = self.db["users"]
 
         user = {"username": username, "password": password, "id": 1}#------------------------- toDo id
         users.insert_one(user)
