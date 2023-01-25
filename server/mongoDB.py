@@ -149,8 +149,6 @@ def deleteAll():#todo
 def listusers():#todo
     pass
 
-def listuses():
-    pass
 
 """
 def delete_all_data(client, database_name, collection_name):
