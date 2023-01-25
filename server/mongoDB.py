@@ -11,7 +11,7 @@ def __init__(self, server) -> None:
 
         
 
-def close(db):
+def close(self):
         # Close connection to server
         self.client.close()
 
@@ -35,11 +35,20 @@ def isadmin(self, username):
     return user["isadmin"]
 
 def isroomadmin(self, username, room):#todo
+    rooms = self.db["rooms"]
+    room = rooms.find_one({"roomname": room})
+    roomsAdmins = rooms["roomadmins"]
     
-    pass
+    return username in roomsAdmins
 
-def addtomyrooms():#todo
-    pass
+def addtomyrooms(self, username, roomName):#todo
+    users = self.db["users"]
+
+    user = users.find_one({"username": username})
+    msg = {"roomname": roomName}
+
+    user.insert_one(msg)
+
 
 def add_user(self,username, password):
         users = self.db["users"]
@@ -49,8 +58,8 @@ def add_user(self,username, password):
 
 
 
-def change_password(db, username, old_password, new_password):
-        users = db["users"]
+def change_password(self, username, old_password, new_password):
+        users = self.db["users"]
 
         user = users.find_one({"username": username})
         if user and user["password"] == old_password:
