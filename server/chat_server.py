@@ -1,5 +1,5 @@
 import socket
-#import mongoDB
+#from mongoDB import *
 import os
 from _thread import *
 from chat_commend import *
