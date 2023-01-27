@@ -149,7 +149,8 @@ class MYmongoDB:
     def listusers():#todo
         pass
 
-
+    def newroom():
+        pass
 """
 def delete_all_data(client, database_name, collection_name):
     db = client[database_name]
