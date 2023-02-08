@@ -1,12 +1,14 @@
 import socket
-import mongoDB
+#import mongoDB
 
-
+from mongoDB import *
 
 # create a list of rooms
 global rooms
+db = MYmongoDB("mongodb://localhost:27017")
+
 rooms = []
-rooms = mongoDB.get_rooms()
+rooms = db.get_rooms()
 
 
 
@@ -15,6 +17,7 @@ rooms = mongoDB.get_rooms()
 
 def lsr(s):
     # send the list of rooms to the admin
+    
     s.send(str(rooms).encode())
 
 

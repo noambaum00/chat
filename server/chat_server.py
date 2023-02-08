@@ -1,5 +1,5 @@
 import socket
-#from mongoDB import *
+from mongoDB import *
 import os
 from _thread import *
 from chat_commend import *
@@ -27,7 +27,7 @@ ADMIN_COMMENDS= """
 
 def main():
     #connect db
-    db = mongoDB.init("mongodb://localhost:27017")
+    db = MYmongoDB("mongodb://localhost:27017")
     
 
     # create a socket object
@@ -85,7 +85,7 @@ def multi_threaded_client(client_socket):
     client_socket.send(("and what your passward?").encode())
     password = get(client_socket)
 
-    isadmin = mongoDB.isadmin(username)
+    isadmin = db.isadmin(username)
     #if mongoDB.sign_in(conn, username, password):
     if True:
         if isadmin == True:
@@ -131,12 +131,12 @@ def multi_threaded_client(client_socket):
                         dlu(command[4:], client_socket)
                     
                     elif command[:4] == "ext:":
-                        mongoDB.close()
+                        db.close()
                         os.close()
 
                     elif command[:5] == "dlta":
                         if command[5:] == "secretPassward":
-                            mongoDB.deleteAll()
+                            db.deleteAll()
                         else:
                             send(client_socket, "wrong passward")
                     else:
@@ -144,7 +144,7 @@ def multi_threaded_client(client_socket):
                     """
                     elif command[:5] == "achp:":
                         command = command[:5].split(",")
-                        if mongoDB.admin_change_password(db, command[1], command[2]):
+                        if db.admin_change_password(db, command[1], command[2]):
                             # Do something if the password was successfully updated
                             client_socket.send(("Your password has been changed.").decode())
                         else:
@@ -159,7 +159,7 @@ def multi_threaded_client(client_socket):
                     lsr(client_socket)
 
                 elif command[:4] == "jnr:":
-                    if mongoDB.allowsUserInRoom(username) == True:
+                    if db.allowsUserInRoom(username) == True:
                         room_name = command[4:]
                         jnr(room_name,username,client_socket)
                     else:
@@ -197,7 +197,7 @@ def multi_threaded_client(client_socket):
                 elif command[:4] == "chp:":
                     command = command[:4].split(",")
 
-                    if mongoDB.change_password(conn, username, command[1], command[2]):
+                    if db.change_password(conn, username, command[1], command[2]):
                     # Do something if the password was successfully updated
                         client_socket.send(("Your password has been changed.").decode())
                     else:
@@ -214,7 +214,7 @@ def multi_threaded_client(client_socket):
 
 """
             #wromg password massge.
-            if mongoDB.user_exists(db, username):
+            if db.user_exists(db, username):
                     client_socket.send(("wrong password.\n pleas try agaim").encode())
 
             #simg up
@@ -227,7 +227,7 @@ def multi_threaded_client(client_socket):
                     #sent email with code. cansled
 
                     #add user to database.
-                    mongoDB.add_user(db, username, password, email)
+                    db.add_user(db, username, password, email)
         """
 
 

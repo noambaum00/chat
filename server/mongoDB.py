@@ -7,7 +7,7 @@ class MYmongoDB:
     def __init__(self, server) -> None:
         self.client = MongoClient(server)
         self.db = self.client["Cluster0"]
-        return self.db
+        #return self.db
 
             
 
@@ -70,8 +70,8 @@ class MYmongoDB:
                 return False
 
 
-    def admin_change_password(db, username, new_password):
-            users = db["users"]
+    def admin_change_password(self, username, new_password):
+            users = self.db["users"]
 
             user = users.find_one({"username": username})
             if user:
@@ -82,8 +82,8 @@ class MYmongoDB:
                 return False
 
 
-    def user_exists(db,username):
-            users = db["users"]
+    def user_exists(self,username):
+            users = self.db["users"]
 
             user = users.find_one({"username": username})
             if user:
@@ -93,8 +93,8 @@ class MYmongoDB:
 
 
 
-    def get_password(db,username):
-            users = db["users"]
+    def get_password(self,username):
+            users = self.db["users"]
 
             user = users.find_one({"username": username})
             if user:
@@ -103,8 +103,8 @@ class MYmongoDB:
                 return None
 
 
-    def get_email(db,username):
-            users = db["users"]
+    def get_email(self,username):
+            users = self.db["users"]
 
             user = users.find_one({"username": username})
             if user:
@@ -113,18 +113,18 @@ class MYmongoDB:
                 return None
 
 
-    def delete_user(db,username):
-            users = db["users"]
+    def delete_user(self,username):
+            users = self.db["users"]
 
             users.delete_one({"username": username})
 
 
-    def deleteroom():#todo move room to arcive.
+    def deleteroom(self):#todo move room to arcive.
         pass
 
 
-    def addMassge(db, room, username, message):
-        collection = db["mycollection"]
+    def addMassge(self, room, username, message):
+        collection = self.db["mycollection"]
         #cerrent time:
         current_time = datetime.datetime.now()
 
@@ -135,21 +135,21 @@ class MYmongoDB:
         collection.insert_one(doc)
 
 
-    def allowsUserInRoom(username):#toDo
+    def allowsUserInRoom(self, username):#toDo
         return True
 
 
-    def get_rooms():#toDo
+    def get_rooms(self):#toDo
         return[{'name': 'loby','clients': []}]
 
-    def deleteAll():#todo
+    def deleteAll(self):#todo
         pass
 
 
-    def listusers():#todo
+    def listusers(self):#todo
         pass
 
-    def newroom():
+    def newroom(self):
         pass
 """
 def delete_all_data(client, database_name, collection_name):
