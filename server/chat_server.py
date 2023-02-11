@@ -1,5 +1,5 @@
 import socket
-from mongoDB import *
+from mongoDB import ChatDB
 import os
 from _thread import *
 from chat_commend import *
@@ -27,7 +27,7 @@ ADMIN_COMMENDS= """
 
 def main():
     #connect db
-    db = MYmongoDB("mongodb://localhost:27017")
+    db = ChatDB("mongodb://localhost:27017")
     
 
     # create a socket object
@@ -85,7 +85,7 @@ def multi_threaded_client(client_socket):
     client_socket.send(("and what your passward?").encode())
     password = get(client_socket)
 
-    isadmin = db.isadmin(username)
+    isadmin = db.get_admin(username)
     #if mongoDB.sign_in(conn, username, password):
     if True:
         if isadmin == True:

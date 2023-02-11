@@ -5,7 +5,7 @@ from mongoDB import *
 
 # create a list of rooms
 global rooms
-db = MYmongoDB("mongodb://localhost:27017")
+#db = MYmongoDB("mongodb://localhost:27017")
 
 rooms = []
 rooms = db.get_rooms()

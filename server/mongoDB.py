@@ -46,7 +46,7 @@ class ChatDB:
     def get_users(self, room_name):
         return self.rooms.find_one({"_id": room_name})["users"]
 
-    def get_admin(self, room_name):
+    def get_room_admin(self, room_name):
         return self.rooms.find_one({"_id": room_name})["admin"]
 
     def archive_room(self, room_name):
@@ -65,6 +65,10 @@ class ChatDB:
 
     def get_user(self, username):
         return self.users.find_one({"_id": username})
+
+    def get_admin(self, username):
+        return self.users.find_one({"_id": username})["isadmin"]
+
 
     def get_room(self, room_name):
         return self.rooms.find_one({"_id": room_name})
