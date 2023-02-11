@@ -104,6 +104,8 @@ class ChatDB:
         self.delete_all_rooms()
         self.delete_all_archive()
 
+    def close(self):
+        self.client.close()
 
 if __name__ == "__main__":
     chat_db = ChatDB()
