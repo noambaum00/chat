@@ -72,6 +72,15 @@ class ChatDB:
     def get_user_password(self, username):
         return self.users.find_one({"_id": username})["password"]
 
+    def login(self, username, password):
+        user = self.users.find_one({"_id": username})
+        if user is None:
+            return False
+        if user["password"] == password:
+            return True
+        return False
+
+
     def delete_user(self, username):
         self.users.delete_one({"_id": username})
 
