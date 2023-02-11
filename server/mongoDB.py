@@ -1,162 +1,114 @@
-from pymongo import MongoClient
 import datetime
+import pymongo
+from pymongo import MongoClient
+
+class ChatDB:
+    def __init__(self):
+        self.client = MongoClient()
+        self.db = self.client.chat_db
+        self.users = self.db.users
+        self.rooms = self.db.rooms
+        self.archive = self.db.archive
+
+    def add_user(self, username, password):
+        user = {"_id": username,
+                "password": password,
+                "rooms": []}
+        self.users.insert_one(user)
+
+    def add_room(self, room_name, admin):
+        room = {"_id": room_name,
+                "admin": admin,
+                "users": [],
+                "messages": []}
+        self.rooms.insert_one(room)
+
+    def add_user_to_room(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$push": {"users": username}})
+        self.users.update_one({"_id": username}, {"$push": {"rooms": room_name}})
+
+    def remove_user_from_room(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$pull": {"users": username}})
+        self.users.update_one({"_id": username}, {"$pull": {"rooms": room_name}})
+
+    def add_message(self, username, room_name, message):
+        message = {"_id": username,
+                   "message": message,
+                   "time": datetime.datetime.now()}
+        self.rooms.update_one({"_id": room_name}, {"$push": {"messages": message}})
+
+    def get_messages(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["messages"]
+
+    def get_rooms(self, username):
+        return self.users.find_one({"_id": username})["rooms"]
+
+    def get_users(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["users"]
+
+    def get_admin(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["admin"]
+
+    def archive_room(self, room_name):
+        room = self.rooms.find_one({"_id": room_name})
+        self.archive.insert_one(room)
+        self.rooms.delete_one({"_id": room_name})
+
+    def get_archive(self):
+        return self.archive.find()
+
+    def get_users_list(self):
+        return self.users.find()
+
+    def get_rooms_list(self):
+        return self.rooms.find()
+
+    def get_user(self, username):
+        return self.users.find_one({"_id": username})
+
+    def get_room(self, room_name):
+        return self.rooms.find_one({"_id": room_name})
+
+    def get_user_password(self, username):
+        return self.users.find_one({"_id": username})["password"]
+
+    def login(self, username, password):
+        user = self.users.find_one({"_id": username})
+        if user is None:
+            return False
+        if user["password"] == password:
+            return True
+        return False
 
 
+    def delete_user(self, username):
+        self.users.delete_one({"_id": username})
 
-class MYmongoDB:
-    def __init__(self, server) -> None:
-        self.client = MongoClient(server)
-        self.db = self.client["Cluster0"]
-        #return self.db
+    def delete_room(self, room_name):
+        self.rooms.delete_one({"_id": room_name})
 
-            
+    def delete_archive(self, room_name):
+        self.archive.delete_one({"_id": room_name})
+
+    def delete_all_users(self):
+        self.users.delete_many({})
+
+    def delete_all_rooms(self):
+        self.rooms.delete_many({})
+
+    def delete_all_archive(self):
+        self.archive.delete_many({})
+
+    def delete_all(self):
+        self.delete_all_users()
+        self.delete_all_rooms()
+        self.delete_all_archive()
 
     def close(self):
-            # Close connection to server
-            self.client.close()
+        self.client.close()
 
-                
-    def sign_in(self, username, password):
-            users = self.db["users"]
-
-            user = users.find_one({"username": username})
-            if user and user["password"] == password:
-                return True
-            else:
-                return False
-
-
-    def isadmin(self, username):
-        return username == "root"
-        
-        users = self.db["users"]
-
-        user = users.find_one({"username": username})
-        return user["isadmin"]
-
-    def isroomadmin(self, username, room):#todo
-        rooms = self.db["rooms"]
-        room = rooms.find_one({"roomname": room})
-        roomsAdmins = rooms["roomadmins"]
-        
-        return username in roomsAdmins
-
-    def addtomyrooms(self, username, roomName):#todo
-        users = self.db["users"]
-
-        user = users.find_one({"username": username})
-        msg = {"roomname": roomName}
-
-        user.insert_one(msg)
-
-
-    def add_user(self,username, password):
-            users = self.db["users"]
-
-            user = {"username": username, "password": password, "id": 1}#------------------------- toDo id
-            users.insert_one(user)
-
-
-
-    def change_password(self, username, old_password, new_password):
-            users = self.db["users"]
-
-            user = users.find_one({"username": username})
-            if user and user["password"] == old_password:
-                user["password"] = new_password
-                users.update_one({"username": username}, {"$set": user})
-                return True
-            else:
-                return False
-
-
-    def admin_change_password(self, username, new_password):
-            users = self.db["users"]
-
-            user = users.find_one({"username": username})
-            if user:
-                user["password"] = new_password
-                users.update_one({"username": username}, {"$set": user})
-                return True
-            else:
-                return False
-
-
-    def user_exists(self,username):
-            users = self.db["users"]
-
-            user = users.find_one({"username": username})
-            if user:
-                return True
-            else:
-                return False
-
-
-
-    def get_password(self,username):
-            users = self.db["users"]
-
-            user = users.find_one({"username": username})
-            if user:
-                return user["password"]
-            else:
-                return None
-
-
-    def get_email(self,username):
-            users = self.db["users"]
-
-            user = users.find_one({"username": username})
-            if user:
-                return user["email"]
-            else:
-                return None
-
-
-    def delete_user(self,username):
-            users = self.db["users"]
-
-            users.delete_one({"username": username})
-
-
-    def deleteroom(self):#todo move room to arcive.
-        pass
-
-
-    def addMassge(self, room, username, message):
-        collection = self.db["mycollection"]
-        #cerrent time:
-        current_time = datetime.datetime.now()
-
-        # Create document to insert
-        doc = {"room": room, "username": username, "message": message, "time": current_time}
-
-        # Insert document into collection
-        collection.insert_one(doc)
-
-
-    def allowsUserInRoom(self, username):#toDo
-        return True
-
-
-    def get_rooms(self):#toDo
-        return[{'name': 'loby','clients': []}]
-
-    def deleteAll(self):#todo
-        pass
-
-
-    def listusers(self):#todo
-        pass
-
-    def newroom(self):
-        pass
-"""
-def delete_all_data(client, database_name, collection_name):
-    db = client[database_name]
-    collection = db[collection_name]
-
-    # Delete all documents in the collection
-    result = collection.delete_many({})
-    print(f"Deleted {result.deleted_count} documents.")
-"""
+if __name__ == "__main__":
+    chat_db = ChatDB()
+    chat_db.delete_all()
+    chat_db.add_user("user1", "123")
+    print(chat_db.get_rooms_list())

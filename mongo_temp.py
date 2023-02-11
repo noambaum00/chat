@@ -111,4 +111,4 @@ if __name__ == "__main__":
     chat_db = ChatDB()
     chat_db.delete_all()
     chat_db.add_user("user1", "123")
-    chat_db.
+    print(chat_db.get_rooms_list())
