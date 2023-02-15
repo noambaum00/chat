@@ -24,10 +24,10 @@ ADMIN_COMMENDS= """
 \tkcu: = kick user
 \text: = exit
 """
+#connect db
+db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net/?retryWrites=true&w=majority")
 
 def main():
-    #connect db
-    db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net/?retryWrites=true&w=majority")
     
 
     # create a socket object
@@ -66,12 +66,12 @@ def main():
         client_socket, addr = server_socket.accept()
 
         print('Connected to: ' + addr[0] + ':' + str(addr[1]))
-        start_new_thread(multi_threaded_client, (client_socket, ))
+        start_new_thread(multi_threaded_client, (client_socket, db))
         ThreadCount += 1
         print('Thread Number: ' + str(ThreadCount))
 
 
-def multi_threaded_client(client_socket):
+def multi_threaded_client(client_socket , db):
     
     global stop_threads
     stop_threads = False

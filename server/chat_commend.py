@@ -1,14 +1,13 @@
 import socket
 #import mongoDB
-
+from chat_server import *
 from mongoDB import ChatDB
 
 # create a list of rooms
 global rooms
-#db = MYmongoDB("mongodb://localhost:27017")
 
 rooms = []
-rooms = db.get_rooms()
+rooms = db.get_rooms_list()
 
 
 

@@ -40,7 +40,7 @@ class ChatDB:
     def get_messages(self, room_name):
         return self.rooms.find_one({"_id": room_name})["messages"]
 
-    def get_rooms(self, username): #make dicshanary
+    def get_rooms(self, username):#make working
         return self.users.find_one({"_id": username})["rooms"]
 
     def get_users(self, room_name):
@@ -49,6 +49,13 @@ class ChatDB:
     def get_room_admin(self, room_name):
         return self.rooms.find_one({"_id": room_name})["admin"]
 
+    def get_all_rooms_and_users(self):
+        rooms = self.get_rooms_list()
+        rooms_and_users = []
+        for room in rooms:
+            rooms_and_users.append({'name': room['_id'], 'clients': room['users']})
+        return rooms_and_users
+    
     def archive_room(self, room_name):
         room = self.rooms.find_one({"_id": room_name})
         self.archive.insert_one(room)
