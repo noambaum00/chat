@@ -1,7 +1,7 @@
 import socket
 #import mongoDB
 
-from mongoDB import *
+from mongoDB import ChatDB
 
 # create a list of rooms
 global rooms

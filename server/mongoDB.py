@@ -3,8 +3,8 @@ import pymongo
 from pymongo import MongoClient
 
 class ChatDB:
-    def __init__(self):
-        self.client = MongoClient()
+    def __init__(self, url):
+        self.client = MongoClient(url)
         self.db = self.client.chat_db
         self.users = self.db.users
         self.rooms = self.db.rooms
@@ -40,7 +40,7 @@ class ChatDB:
     def get_messages(self, room_name):
         return self.rooms.find_one({"_id": room_name})["messages"]
 
-    def get_rooms(self, username):
+    def get_rooms(self, username): #make dicshanary
         return self.users.find_one({"_id": username})["rooms"]
 
     def get_users(self, room_name):
@@ -112,7 +112,7 @@ class ChatDB:
         self.client.close()
 
 if __name__ == "__main__":
-    chat_db = ChatDB()
+    chat_db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net/?retryWrites=true&w=majority")
     chat_db.delete_all()
     chat_db.add_user("user1", "123")
     print(chat_db.get_rooms_list())

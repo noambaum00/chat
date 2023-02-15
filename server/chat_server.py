@@ -27,7 +27,7 @@ ADMIN_COMMENDS= """
 
 def main():
     #connect db
-    db = ChatDB("mongodb://localhost:27017")
+    db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net/?retryWrites=true&w=majority")
     
 
     # create a socket object
