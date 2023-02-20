@@ -23,6 +23,7 @@ ADMIN_COMMENDS= """
 \tlsr: = list room
 \tlsur:= list users in room
 \tkcu: = kick user
+\tachp: = admin change password
 \text: = exit
 """
 #connect db
@@ -243,8 +244,9 @@ def send(s,a):
     s.send((a).encode())
 
 
-
+print(ADMIN_COMMENDS + "\n\n\n" + HELP_MASSAGE)
 main()
+
 """try:
     main()
 except:
