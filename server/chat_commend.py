@@ -1,6 +1,6 @@
 import socket
 #import mongoDB
-from chat_server import *
+from chat_server import db
 from mongoDB import ChatDB
 
 # create a list of rooms
@@ -49,6 +49,9 @@ def jnr(room_name,username,s):
     # send a confirmation message to the user
     s.send((room_name + " joined\n").encode())
 
+def adr(username, roomname, s):
+    db.add_user_to_room(username, roomname)
+    s.send(("room added to user " + username).encode())
 
 def lvr(username,s):
     # leave the room
@@ -98,7 +101,7 @@ def msg(message, room_name ,s, clients, isadmin):
                         else:
                             client_socket.send((message + "\n").encode())
 
+    db.add_message(client, room_name, message)
+
     # send a confirmation message to the user
     s.send(("Message sent").encode())
-
-    #mongoDB.sendMassge(conn, room, username, message)

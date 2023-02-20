@@ -85,7 +85,7 @@ def multi_threaded_client(client_socket , db):
     client_socket.send(("and what your passward?").encode())
     password = get(client_socket)
 
-    isadmin = db.get_admin(username)
+    isadmin = db.get_server_admin(username)
     #if mongoDB.sign_in(conn, username, password):
     if True:
         if isadmin == True:

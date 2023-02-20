@@ -49,6 +49,9 @@ class ChatDB:
     def get_room_admin(self, room_name):
         return self.rooms.find_one({"_id": room_name})["admin"]
 
+    def get_server_admin(self, username):
+        return self.users.find_one({"_id": username})["admin"]
+
     def get_all_rooms_and_users(self):
         rooms = self.get_rooms_list()
         rooms_and_users = []
