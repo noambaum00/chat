@@ -11,6 +11,7 @@ the list comend is:
 \tlvr: = leave room
 \tlsur:= list users in room
 \tmsg: = send message
+\tadr: = add room to user list
 \texit
 \thelp
 \tchange_password
@@ -86,8 +87,7 @@ def multi_threaded_client(client_socket , db):
     password = get(client_socket)
 
     isadmin = db.get_server_admin(username)
-    #if mongoDB.sign_in(conn, username, password):
-    if True:
+    if db.login(username, password):
         if isadmin == True:
             client_socket.send(("admin\n").encode())
         else:
@@ -139,10 +139,8 @@ def multi_threaded_client(client_socket , db):
                             db.deleteAll()
                         else:
                             send(client_socket, "wrong passward")
-                    else:
-                        error_chack = True
-                    """
-                    elif command[:5] == "achp:":
+                    
+                    elif command[:5] == "achp:":#---------------------------------need to add function to mongoDB class.
                         command = command[:5].split(",")
                         if db.admin_change_password(db, command[1], command[2]):
                             # Do something if the password was successfully updated
@@ -151,7 +149,9 @@ def multi_threaded_client(client_socket , db):
                             # Do something if the password change failed
                             client_socket.send(("Please try again.").decode())
 
-                    """
+                    else:
+                        error_chack = True
+                    
                     
 
 
@@ -183,21 +183,11 @@ def multi_threaded_client(client_socket , db):
                     client_socket.close()
                     return
 
-                else:
-                    error_chack = True
 
-
-
-                if error_chack == True:
-                    send(client_socket, command + " : not found")
-                    pass
-                
-
-                """
-                elif command[:4] == "chp:":
+                elif command[:4] == "chp:":#---------------------- add function to mongoDb class
                     command = command[:4].split(",")
 
-                    if db.change_password(conn, username, command[1], command[2]):
+                    if db.change_password(username, command[1], command[2]):
                     # Do something if the password was successfully updated
                         client_socket.send(("Your password has been changed.").decode())
                     else:
@@ -207,19 +197,26 @@ def multi_threaded_client(client_socket , db):
                 elif command == "hlp":
                     client_socket.send(HELP_MASSAGE.encode())
 
-                """
+                else:
+                    error_chack = True
+
+                
+                if error_chack == True:
+                    send(client_socket, command + " : not found")
+                    pass
+
+                
             except Exception as e:
                 print(e)
                 lvr(username,client_socket)
 
-"""
             #wromg password massge.
-            if db.user_exists(db, username):
+            if db.user_exists(db, username):#----------------add function to mongoDb class
                     client_socket.send(("wrong password.\n pleas try agaim").encode())
 
-            #simg up
+            #sing up
             else:
-                client_socket.send(("do you want to sing up(y/n)? ").encode())
+                client_socket.send(("do you want to sing up(y/n)? ").encode())#------------------add function to mongoDB class
                 ans = get(client_socket)
                 if ans == "y":
                     client_socket.send(("what yout email is? ").encode())
@@ -228,7 +225,6 @@ def multi_threaded_client(client_socket , db):
 
                     #add user to database.
                     db.add_user(db, username, password, email)
-        """
 
 
 
@@ -248,8 +244,8 @@ def send(s,a):
 
 
 
-
-try:
+main()
+"""try:
     main()
 except:
-    print(error)
+    print(error)"""
