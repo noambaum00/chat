@@ -1,0 +1,708 @@
+##### Translate this code  from Python into C#
+### Python
+    
+import socket
+import os
+from _thread import *
+
+import datetime
+import pymongo
+from pymongo import MongoClient
+
+HELP_MASSAGE = """
+the list comend is:
+\tlsr: = list room
+\tjnr: = join room
+\tlvr: = leave room
+\tlsur:= list users in room
+\tmsg: = send message
+\tadr: = add room to user list
+\texit
+\thelp
+\tchange_password
+"""
+ADMIN_COMMENDS= """
+\tcrr: = crieit room
+\tdlr: = delete room
+\tdlu: = delete user
+\tlsr: = list room
+\tlsur:= list users in room
+\tkcu: = kick user
+\tachp: = admin change password
+\text: = exit
+"""
+#connect db
+db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net/?retryWrites=true&w=majority")
+
+def main():
+    
+
+    # create a socket object
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # get local machine name
+    host = "127.0.0.1"
+
+    port = 585
+
+    print("STSRT")
+
+    # bind to the port
+    server_socket.bind((host, port))
+
+    print("BIND")
+
+    # queue up to 50 requests
+    server_socket.listen(50)
+
+    print("LISENING")
+
+    #threading staf
+    ThreadCount = 0
+
+
+
+    # create a dictionary of connected clients, with the key being the client's
+    # socket and the value being the client's username
+    global clients
+    clients = {}
+
+
+    while True:
+        # establish a connection
+        client_socket, addr = server_socket.accept()
+
+        print('Connected to: ' + addr[0] + ':' + str(addr[1]))
+        start_new_thread(multi_threaded_client, (client_socket, db))
+        ThreadCount += 1
+        print('Thread Number: ' + str(ThreadCount))
+
+
+def multi_threaded_client(client_socket , db):
+    
+    global stop_threads
+    stop_threads = False
+    # send a thank you message to the client
+    client_socket.send(("Thank you for connecting").encode())
+
+    # get the client's username and password
+    client_socket.send(("sooo... what your name is? ").encode())
+
+    username = get(client_socket)
+    client_socket.send(("and what your passward?").encode())
+    password = get(client_socket)
+
+    isadmin = db.get_server_admin(username)
+    if db.login(username, password):
+        if isadmin == True:
+            client_socket.send(("admin\n").encode())
+        else:
+            client_socket.send(("user\n").encode())
+
+        # if the user is not an admin, add the user to the list of connected
+        # clients and set the user's status to "user"
+        clients[client_socket] = username
+                
+        #join loby
+        room_name = "loby"
+        jnr(room_name, username, client_socket)
+
+        # receive the user's commands and act on them
+        while True:
+            try:
+                if stop_threads == True:
+                    break
+                
+                # receive the user's command
+                command = get(client_socket)
+
+                error_chack = False
+
+                if isadmin:
+
+                    if command[:4] == "lsu:":
+                        lsu(client_socket,clients)
+
+                    elif command[0:4] == "crr:":
+                        crr(command[4:], client_socket)
+
+                    elif command[:4] == "dlr:":
+                        dlr(command[4:], client_socket)
+                        
+
+                    elif command[:4] == "kcu:":
+                        kcu(command[4:], client_socket, clients)
+
+                    elif command[:4] == "dlu:":
+                        dlu(command[4:], client_socket)
+                    
+                    elif command[:4] == "ext:":
+                        db.close()
+                        os.close()
+
+                    elif command[:5] == "dlta":
+                        if command[5:] == "secretPassward":
+                            db.deleteAll()
+                        else:
+                            send(client_socket, "wrong passward")
+                    
+                    elif command[:5] == "achp:":#---------------------------------need to add function to mongoDB class.
+                        command = command[:5].split(",")
+                        if db.admin_change_password(db, command[1], command[2]):
+                            # Do something if the password was successfully updated
+                            client_socket.send(("Your password has been changed.").decode())
+                        else:
+                            # Do something if the password change failed
+                            client_socket.send(("Please try again.").decode())
+
+                    else:
+                        error_chack = True
+                    
+                    
+
+
+                if command[:4] == "lsr:":
+                    lsr(client_socket)
+
+                elif command[:4] == "jnr:":
+                    if db.allowsUserInRoom(username) == True:
+                        room_name = command[4:]
+                        jnr(room_name,username,client_socket)
+                    else:
+                        send(client_socket, "you not allow in her.\n")
+                elif command[:4] == "lvr:":
+                    lvr(username,client_socket)
+
+                elif command[:5] == "lcur:":
+                    lcur(room_name, client_socket)
+
+                elif command[:4] == "msg:":
+                        
+                    message =username + ": " + command[4:]
+                    msg(message, room_name, client_socket, clients, isadmin)
+
+                elif command[:4] == "hlp":
+                    client_socket.send(HELP_MASSAGE.encode())
+
+                elif command[:4] == "ext:":
+                    # close the admin's connection
+                    client_socket.close()
+                    return
+
+
+                elif command[:4] == "chp:":#---------------------- add function to mongoDb class
+                    command = command[:4].split(",")
+
+                    if db.change_password(username, command[1], command[2]):
+                    # Do something if the password was successfully updated
+                        client_socket.send(("Your password has been changed.").decode())
+                    else:
+                    # Do something if the password change failed
+                        client_socket.send(("Please try again.").decode())
+
+                elif command == "hlp":
+                    client_socket.send(HELP_MASSAGE.encode())
+
+                else:
+                    error_chack = True
+
+                
+                if error_chack == True:
+                    send(client_socket, command + " : not found")
+                    pass
+
+                
+            except Exception as e:
+                print(e)
+                lvr(username,client_socket)
+
+            #wromg password massge.
+            if db.user_exists(db, username):#----------------add function to mongoDb class
+                    client_socket.send(("wrong password.\n pleas try agaim").encode())
+
+            #sing up
+            else:
+                client_socket.send(("do you want to sing up(y/n)? ").encode())#------------------add function to mongoDB class
+                ans = get(client_socket)
+                if ans == "y":
+                    client_socket.send(("what yout email is? ").encode())
+                    email = get(client_socket)
+                    #sent email with code. cansled
+
+                    #add user to database.
+                    db.add_user(db, username, password, email)
+
+
+
+
+def get(s):
+    try:
+        a = ''
+        while(len(a) < 3):
+            a= s.recv(1024).decode().replace('\r\n', '')
+        return a
+    except ConnectionResetError:
+        stop_threads = True
+
+
+def send(s,a):
+    s.send((a).encode())
+
+
+
+class ChatDB:
+    def __init__(self, url):
+        self.client = MongoClient(url)
+        self.db = self.client.chat_db
+        self.users = self.db.users
+        self.rooms = self.db.rooms
+        self.archive = self.db.archive
+
+    def add_user(self, username, password):
+        user = {"_id": username,
+                "password": password,
+                "rooms": []}
+        self.users.insert_one(user)
+
+    def add_room(self, room_name, admin):
+        room = {"_id": room_name,
+                "admin": admin,
+                "users": [],
+                "messages": []}
+        self.rooms.insert_one(room)
+
+    def add_user_to_room(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$push": {"users": username}})
+        self.users.update_one({"_id": username}, {"$push": {"rooms": room_name}})
+
+    def remove_user_from_room(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$pull": {"users": username}})
+        self.users.update_one({"_id": username}, {"$pull": {"rooms": room_name}})
+
+    def add_message(self, username, room_name, message):
+        message = {"_id": username,
+                   "message": message,
+                   "time": datetime.datetime.now()}
+        self.rooms.update_one({"_id": room_name}, {"$push": {"messages": message}})
+
+    def get_messages(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["messages"]
+
+    def get_rooms(self, username):#make working
+        return self.users.find_one({"_id": username})["rooms"]
+
+    def get_users(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["users"]
+
+    def get_room_admin(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["admin"]
+
+    def get_server_admin(self, username):
+        return self.users.find_one({"_id": username})["admin"]
+
+    def get_all_rooms_and_users(self):
+        rooms = self.get_rooms_list()
+        rooms_and_users = []
+        for room in rooms:
+            rooms_and_users.append({'name': room['_id'], 'clients': room['users']})
+        return rooms_and_users
+    
+    def archive_room(self, room_name):
+        room = self.rooms.find_one({"_id": room_name})
+        self.archive.insert_one(room)
+        self.rooms.delete_one({"_id": room_name})
+
+    def get_archive(self):
+        return self.archive.find()
+
+    def get_users_list(self):
+        return self.users.find()
+
+    def get_rooms_list(self):
+        return self.rooms.find()
+
+    def get_user(self, username):
+        return self.users.find_one({"_id": username})
+    
+    def add_permission(self, username, permission):
+        self.users.update_one({"_id": username}, {"$push": {"permissions": permission}})
+
+    def remove_permission(self, username, permission):
+        self.users.update_one({"_id": username}, {"$pull": {"permissions": permission}})
+
+    def get_permissions(self, username):
+        return self.users.find_one({"_id": username})["permissions"]
+
+    def is_admin(self, username):
+        return "admin" in self.get_permissions(username)
+
+    def get_room(self, room_name):
+        return self.rooms.find_one({"_id": room_name})
+
+    def get_user_password(self, username):
+        return self.users.find_one({"_id": username})["password"]
+
+    def login(self, username, password):
+        user = self.users.find_one({"_id": username})
+        if user is None:
+            return False
+        if user["password"] == password:
+            return True
+        return False
+
+
+    def delete_user(self, username):
+        self.users.delete_one({"_id": username})
+
+    def delete_room(self, room_name):
+        self.rooms.delete_one({"_id": room_name})
+
+    def delete_archive(self, room_name):
+        self.archive.delete_one({"_id": room_name})
+
+    def delete_all_users(self):
+        self.users.delete_many({})
+
+    def delete_all_rooms(self):
+        self.rooms.delete_many({})
+
+    def delete_all_archive(self):
+        self.archive.delete_many({})
+
+    def delete_all(self):
+        self.delete_all_users()
+        self.delete_all_rooms()
+        self.delete_all_archive()
+
+    def close(self):
+        self.client.close()
+
+
+
+
+
+class mongo_permission:
+    def is_moderator(self, username):
+        return "moderator" in self.get_permissions(username)
+
+    def is_user(self, username):
+        return "user" in self.get_permissions(username)
+
+    def is_guest(self, username):
+        return "guest" in self.get_permissions(username)
+
+    def is_banned(self, username):
+        return "banned" in self.get_permissions(username)
+
+    def is_muted(self, username):
+        return "muted" in self.get_permissions(username)
+
+    def is_kicked(self, username):
+        return "kicked" in self.get_permissions(username)
+
+    def is_room_admin(self, username, room_name):
+        return username == self.get_room_admin(room_name)
+
+    def is_server_admin(self, username):
+        return username == self.get_server_admin(username)
+
+    def is_room_moderator(self, username, room_name):
+        return username in self.get_room_moderators(room_name)
+
+    def is_server_moderator(self, username):
+        return username in self.get_server_moderators(username)
+
+    def is_room_user(self, username, room_name):
+        return username in self.get_room_users(room_name)
+
+    def is_server_user(self, username):
+        return username in self.get_server_users(username)
+
+    def is_room_guest(self, username, room_name):
+        return username in self.get_room_guests(room_name)
+
+    def is_server_guest(self, username):
+        return username in self.get_server_guests(username)
+
+    def is_room_banned(self, username, room_name):
+        return username in self.get_room_banned(room_name)
+
+    def is_server_banned(self, username):
+        return username in self.get_server_banned(username)
+
+    def is_room_muted(self, username, room_name):
+        return username in self.get_room_muted(room_name)
+
+    def is_server_muted(self, username):
+        return username in self.get_server_muted(username)
+
+    def is_room_kicked(self, username, room_name):
+        return username in self.get_room_kicked(room_name)
+
+    def is_server_kicked(self, username):
+        return username in self.get_server_kicked(username)
+
+    def get_room_moderators(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["moderators"]
+
+    def get_server_moderators(self, username):
+        return self.users.find_one({"_id": username})["moderators"]
+
+    def get_room_users(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["users"]
+
+    def get_server_users(self, username):
+        return self.users.find_one({"_id": username})["users"]
+
+    def get_room_guests(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["guests"]
+
+    def get_server_guests(self, username):
+        return self.users.find_one({"_id": username})["guests"]
+
+    def get_room_banned(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["banned"]
+
+    def get_server_banned(self, username):
+        return self.users.find_one({"_id": username})["banned"]
+
+    def get_room_muted(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["muted"]
+
+    def get_server_muted(self, username):
+        return self.users.find_one({"_id": username})["muted"]
+
+    def get_room_kicked(self, room_name):
+        return self.rooms.find_one({"_id": room_name})["kicked"]
+
+    def get_server_kicked(self, username):
+        return self.users.find_one({"_id": username})["kicked"]
+
+    def add_room_moderator(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$push": {"moderators": username}})
+
+    def add_server_moderator(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$push": {"moderators": username}})
+
+    def add_room_user(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$push": {"users": username}})
+
+    def add_server_user(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$push": {"users": username}})
+
+    def add_room_guest(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$push": {"guests": username}})
+
+    def add_server_guest(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$push": {"guests": username}})
+
+    def add_room_banned(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$push": {"banned": username}})
+
+    def add_server_banned(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$push": {"banned": username}})
+
+    def add_room_muted(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$push": {"muted": username}})
+
+    def add_server_muted(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$push": {"muted": username}})
+
+    def add_room_kicked(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$push": {"kicked": username}})
+
+    def add_server_kicked(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$push": {"kicked": username}})
+
+    def remove_room_moderator(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$pull": {"moderators": username}})
+
+    def remove_server_moderator(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$pull": {"moderators": username}})
+
+    def remove_room_user(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$pull": {"users": username}})
+
+    def remove_server_user(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$pull": {"users": username}})
+
+    def remove_room_guest(self, username, room_name):
+        self.rooms.update_one({"_id": room_name}, {"$pull": {"guests": username}})
+
+    def remove_server_guest(self, username, room_name):
+        self.users.update_one({"_id": username}, {"$pull": {"guests": username}})
+
+
+
+# create a list of rooms
+global rooms
+
+rooms = []
+rooms = db.get_rooms_list()
+
+
+
+
+
+
+def lsr(s):
+    # send the list of rooms to the admin
+    
+    s.send(str(rooms).encode())
+
+
+def lsu(s,clients):
+    # send the list of connected users to the admin
+    s.send(str(clients).encode())
+
+def crr(room_name,s):
+    room = {"name": room_name, "clients": []}
+    rooms.append(room)
+    
+    # send a confirmation message to the admin
+    s.send(("Room created").encode())
+
+
+def dlr(room_name,s):
+    # delete the room from the list of rooms
+    for room in rooms:
+        if room["name"] == room_name:
+            rooms.remove(room)
+    # send a confirmation message to the admin
+    s.send(("Room deleted").encode())
+
+
+def jnr(room_name,username,s):
+    # join the room
+    for room in rooms:
+        if room["name"] == room_name:
+            room["clients"].append(username)
+    # send a confirmation message to the user
+    s.send((room_name + " joined\n").encode())
+
+def adr(username, roomname, s):
+    db.add_user_to_room(username, roomname)
+    s.send(("room added to user " + username).encode())
+
+def lvr(username,s):
+    # leave the room
+    for room in rooms:
+        try:
+            room.remove(username)
+        except:
+            pass
+
+    # send a confirmation message to the user
+    s.send(("Room left").encode())
+
+
+def lcur(room_name,s):
+    # send the list of users in the room to the admin
+    for room in rooms:
+        if room["name"] == room_name:
+            s.send(str(room["clients"]).encode())
+
+
+def kcu(usernameToKick, s, clients):
+    # kick the user
+    for client in clients:
+        if clients[client] == usernameToKick:
+            client.close()
+            del clients[client]
+    # send a confirmation message to the admin
+    s.send('User : {usernameToKick} kicked')
+
+
+def dlu(usernameToKick,s):
+    #delete username frome database
+    #mongoDB.delete_user(conn, usernameToDelete)
+    s.send('User : {usernameToDelete} deleted')
+
+
+def msg(message, room_name ,s, clients, isadmin):
+
+    # send the message to the room
+    for room in rooms:
+        if room["name"] == room_name:
+            for client in room["clients"]:
+                for client_socket in clients:
+                    if clients[client_socket] == client:
+                        if isadmin:
+                            client_socket.send(("admin>> " + message + "\n").encode())
+                        else:
+                            client_socket.send((message + "\n").encode())
+
+    db.add_message(client, room_name, message)
+
+    # send a confirmation message to the user
+    s.send(("Message sent").encode())
+    
+### c#
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.IO;
+using MongoDB.Driver;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.IdGenerators;
+using MongoDB.Bson.Serialization.Options;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Driver.Core;
+using MongoDB.Driver.Linq;
+using MongoDB.Driver.Builders;
+using MongoDB.Driver.GridFS;
+using MongoDB.Driver.Wrappers;
+using MongoDB.Bson.IO;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.IdGenerators;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Driver.Builders;
+using MongoDB.Driver.GridFS;
+using MongoDB.Driver.Linq;
+using MongoDB.Driver.Wrappers;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Chat_server
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            // create a socket object
+            Socket server_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            // get local machine name
+            string host = "127.0.0.1";
+
+            int port = 585;
+
+            Console.WriteLine("STSRT");
+
+            // bind to the port
+            server_socket.Bind(new IPEndPoint(IPAddress.Parse(host), port));
+
+            Console.WriteLine("BIND");
+
+            // queue up to 50 requests
+            server_socket.Listen(50);
+
+            Console.WriteLine("LISENING");
+
+            //threading staf
+            int ThreadCount = 0;
+
+            // create a dictionary of connected clients, with the key being the client's
+            // socket and the value being the client's username
+            Dictionary<Socket, string> clients = new
