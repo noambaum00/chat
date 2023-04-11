@@ -172,9 +172,12 @@ def multi_threaded_client(client_socket , db):
                     lcur(room_name, client_socket)
 
                 elif command[:4] == "msg:":
-                        
                     message =username + ": " + command[4:]
                     msg(message, room_name, client_socket, clients, isadmin)
+
+                elif command[:3] == "dm:":
+                    message = username + ": " + command[4:].strip(",")
+                    dm(message[0], message[1], client_socket, clients, isadmin)
 
                 elif command[:4] == "hlp":
                     client_socket.send(HELP_MASSAGE.encode())

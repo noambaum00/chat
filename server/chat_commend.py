@@ -97,11 +97,21 @@ def msg(message, room_name ,s, clients, isadmin):
                 for client_socket in clients:
                     if clients[client_socket] == client:
                         if isadmin:
-                            client_socket.send(("admin>> " + message + "\n").encode())
+                            client_socket.send((room_name+",admin>> " + message + "\n").encode())
                         else:
-                            client_socket.send((message + "\n").encode())
+                            client_socket.send((room_name+","+message + "\n").encode())
 
     db.add_message(client, room_name, message)
 
     # send a confirmation message to the user
     s.send(("Message sent").encode())
+
+
+def dm(message, receive, s, clients, isadmin):
+    for client_socket in clients:
+        if clients[client_socket] == receive:
+            if isadmin:
+                client_socket.send(("admin>> " + message + "\n").encode())
+            else:
+                client_socket.send((message + "\n").encode())
+            break
