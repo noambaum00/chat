@@ -27,7 +27,7 @@ ADMIN_COMMENDS= """
 \text: = exit
 """
 #connect db
-db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net/?retryWrites=true&w=majority")
+db = ChatDB("mongodb+srv://noambaum:noambaums@cluster0.ec4wlbs.mongodb.net")
 
 def main():
     
@@ -87,9 +87,9 @@ def multi_threaded_client(client_socket , db):
     client_socket.send(("and what your passward?").encode())
     password = get(client_socket)
 
-    isadmin = db.get_server_admin(username)
-    if db.login(username, password):
-        if isadmin == True:
+    
+    if db.login(username, password) == 2:
+        if db.is_server_admin(username):
             client_socket.send(("admin\n").encode())
         else:
             client_socket.send(("user\n").encode())
@@ -214,21 +214,23 @@ def multi_threaded_client(client_socket , db):
                 print(e)
                 lvr(username,client_socket)
 
-            #wromg password massge.
-            if db.user_exists(db, username):#----------------add function to mongoDb class
-                    client_socket.send(("wrong password.\n pleas try agaim").encode())
+    #wromg password massge.
+    elif db.login(username, password) == 1:#----------------add function to mongoDb class
+        client_socket.send(("password not connected to username.\n pleas try agaim").encode())
+        multi_threaded_client(client_socket , db)
+        
 
-            #sing up
-            else:
-                client_socket.send(("do you want to sing up(y/n)? ").encode())#------------------add function to mongoDB class
-                ans = get(client_socket)
-                if ans == "y":
-                    client_socket.send(("what yout email is? ").encode())
-                    email = get(client_socket)
-                    #sent email with code. cansled
+    #sing up
+    else:
+        client_socket.send(("do you want to sing up(y/n)? ").encode())#------------------add function to mongoDB class
+        ans = get(client_socket)
+        if ans == "y":
+            client_socket.send(("what yout email is? ").encode())
+            email = get(client_socket)
+            #sent email with code. cansled
 
-                    #add user to database.
-                    db.add_user(db, username, password, email)
+            #add user to database.
+            db.add_user(username, password, email)
 
 
 

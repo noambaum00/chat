@@ -10,9 +10,10 @@ class ChatDB:
         self.rooms = self.db.rooms
         self.archive = self.db.archive
 
-    def add_user(self, username, password):
+    def add_user(self, username, password, email):
         user = {"_id": username,
                 "password": password,
+                "email": email,
                 "rooms": []}
         self.users.insert_one(user)
 
@@ -49,9 +50,6 @@ class ChatDB:
     def get_room_admin(self, room_name):
         return self.rooms.find_one({"_id": room_name})["admin"]
 
-    def get_server_admin(self, username):
-        return self.users.find_one({"_id": username})["admin"]
-
     def get_all_rooms_and_users(self):
         rooms = self.get_rooms_list()
         rooms_and_users = []
@@ -85,8 +83,11 @@ class ChatDB:
     def get_permissions(self, username):
         return self.users.find_one({"_id": username})["permissions"]
 
-    def is_admin(self, username):
-        return "admin" in self.get_permissions(username)
+    def is_server_admin(self, username):
+        try:
+            return "server_admin" in self.get_permissions(username)
+        except:
+            return 0
 
     def get_room(self, room_name):
         return self.rooms.find_one({"_id": room_name})
@@ -97,10 +98,10 @@ class ChatDB:
     def login(self, username, password):
         user = self.users.find_one({"_id": username})
         if user is None:
-            return False
+            return 0
         if user["password"] == password:
-            return True
-        return False
+            return 2
+        return 1
 
 
     def delete_user(self, username):
@@ -290,7 +291,8 @@ class mongo_permission:
 
 
 if __name__ == "__main__":
-    chat_db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net/?retryWrites=true&w=majority")
-    chat_db.delete_all()
-    chat_db.add_user("user1", "123")
+    chat_db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net")
+    #chat_db.delete_all()
+    #chat_db.add_user("noam", "password")
+    chat_db.add_permission("noam", "server_admin")
     print(chat_db.get_rooms_list())

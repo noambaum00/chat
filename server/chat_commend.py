@@ -25,7 +25,7 @@ def lsu(s,clients):
     s.send(str(clients).encode())
 
 def crr(room_name,s):
-    room = {"name": room_name, "clients": []}
+    room = {"name": room_name, "clients": ["admin"]}
     rooms.append(room)
     
     # send a confirmation message to the admin
