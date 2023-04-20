@@ -154,7 +154,7 @@ class mongo_permission:
         return "kicked" in self.get_permissions(username)
 
     def is_room_admin(self, username, room_name):
-        return username == self.get_room_admin(room_name)
+        return username in self.get_room_admin(room_name)
 
     def is_server_admin(self, username):
         return username == self.get_server_admin(username)

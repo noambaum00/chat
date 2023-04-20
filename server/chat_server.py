@@ -99,8 +99,6 @@ def multi_threaded_client(client_socket , db):
         clients[client_socket] = username
                 
         #join loby
-        room_name = "loby"
-        jnr(room_name, username, client_socket)
 
         # receive the user's commands and act on them
         while True:
@@ -116,10 +114,7 @@ def multi_threaded_client(client_socket , db):
                 if isadmin:
 
                     if command[:4] == "lsu:":
-                        lsu(client_socket,clients)
-
-                    elif command[0:4] == "crr:":
-                        crr(command[4:], client_socket)
+                        client_socket.send(str(clients).encode())
 
                     elif command[:4] == "dlr:":
                         dlr(command[4:], client_socket)
@@ -155,9 +150,17 @@ def multi_threaded_client(client_socket , db):
                     
                     
 
+                elif command[0:4] == "crr:":
+                    try:
+                        db.add_room(room_name, username)
+                        room = {"name": room_name, "clients": []}
+                        rooms.append(room)
+                        client_socket..send(("Room created").encode())
+                    except:
+                        client_socket.send(("error").encode())
 
                 if command[:4] == "lsr:":
-                    lsr(client_socket)
+                    client_socket.send(str(rooms).encode())
 
                 elif command[:4] == "jnr:":
                     if db.allowsUserInRoom(username) == True:
@@ -165,6 +168,7 @@ def multi_threaded_client(client_socket , db):
                         jnr(room_name,username,client_socket)
                     else:
                         send(client_socket, "you not allow in her.\n")
+                        
                 elif command[:4] == "lvr:":
                     lvr(username,client_socket)
 

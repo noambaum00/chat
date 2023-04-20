@@ -17,19 +17,18 @@ rooms = db.get_rooms_list()
 def lsr(s):
     # send the list of rooms to the admin
     
-    s.send(str(rooms).encode())
+    
 
 
 def lsu(s,clients):
     # send the list of connected users to the admin
-    s.send(str(clients).encode())
+    
 
 def crr(room_name,s):
-    room = {"name": room_name, "clients": ["admin"]}
-    rooms.append(room)
+
     
     # send a confirmation message to the admin
-    s.send(("Room created").encode())
+    s
 
 
 def dlr(room_name,s):
