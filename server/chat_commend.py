@@ -16,6 +16,7 @@ rooms = db.get_rooms_list()
 
 def lsr(s):
     # send the list of rooms to the admin
+    pass
     
     
 
@@ -25,10 +26,8 @@ def lsu(s,clients):
     
 
 def crr(room_name,s):
-
-    
     # send a confirmation message to the admin
-    s
+    pass
 
 
 def dlr(room_name,s):

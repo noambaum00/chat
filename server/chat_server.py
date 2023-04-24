@@ -120,11 +120,16 @@ def multi_threaded_client(client_socket , db):
 
                     elif command[:4] == "dlr:":
                             # delete the room from the list of rooms
-                        for room in rooms:
-                            if room["name"] == room_name:
-                                rooms.remove(room)
-                        # send a confirmation message to the admin
-                        client_socket.send(("Room deleted").encode())
+                        if db.is_room_admin(command[4:], username):
+                            for room in rooms:
+                                if room["name"] == room_name:
+                                    rooms.remove(room)
+                            # send a confirmation message to the admin
+                            db.delete_room(command[4:], username)
+                            client_socket.send(("Room deleted").encode())
+                        else:
+                            client_socket.send(("{username} non room admin").encode())
+                        
 
 
                         

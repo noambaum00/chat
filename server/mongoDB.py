@@ -21,22 +21,37 @@ class ChatDB:
         room = {"_id": room_name,
                 "admin": admin,
                 "users": [],
+                "banned": [],
                 "messages": []}
         self.rooms.insert_one(room)
-        add_user_to_room(admin, room_name)
+        self.add_user_to_room(admin, room_name)
 
     def add_user_to_room(self, username, room_name):
         try:
-            self.rooms.find_one{"_id": room_name}
+            self.rooms.find_one({"_id": room_name})
             self.rooms.update_one({"_id": room_name}, {"$push": {"users": username}})
+            self.users.update_one({"_id": username}, {"$push": {"rooms": room_name}})
+            return True
+        except:
+            return False
+        
+    def ban_user_from_room(self, username, room_name):
+        try:
+            self.rooms.find_one({"_id": room_name})
+            self.rooms.update_one({"_id": room_name}, {"$push": {"banned": username}})
             self.users.update_one({"_id": username}, {"$push": {"rooms": room_name}})
             return True
         except:
             return False
 
     def remove_user_from_room(self, username, room_name):
-        self.rooms.update_one({"_id": room_name}, {"$pull": {"users": username}})
-        self.users.update_one({"_id": username}, {"$pull": {"rooms": room_name}})
+        try:
+            self.rooms.find_one({"_id": room_name})
+            self.rooms.update_one({"_id": room_name}, {"$pull": {"users": username}})
+            self.users.update_one({"_id": username}, {"$pull": {"rooms": room_name}})
+            return True
+        except:
+            return False
 
     def add_message(self, username, room_name, message):
         message = {"_id": username,
@@ -44,8 +59,16 @@ class ChatDB:
                    "time": datetime.datetime.now()}
         self.rooms.update_one({"_id": room_name}, {"$push": {"messages": message}})
 
-    def get_messages(self, room_name):
+    def get_all_messages(self, room_name):
         return self.rooms.find_one({"_id": room_name})["messages"]
+    
+    def get_messages_from(self, room_name, time_from):
+        return self.rooms.find_one({"_id": room_name})["messages"][time_from:]
+        
+    
+
+    def get_all_users(self):
+        return self.users.find()
 
     def get_rooms(self, username):#make working
         return self.users.find_one({"_id": username})["rooms"]
@@ -55,6 +78,9 @@ class ChatDB:
 
     def get_room_admin(self, room_name):
         return self.rooms.find_one({"_id": room_name})["admin"]
+    
+    def is_room_admin(self, room_name, usermame):
+        return usermame in self.rooms.find_one({"_id": room_name})["admin"]
 
     def get_all_rooms_and_users(self):
         rooms = self.get_rooms_list()
@@ -108,13 +134,30 @@ class ChatDB:
         if user["password"] == password:
             return 2
         return 1
+    
+    def change_password(self, username, old_password, new_password):
+        user = self.users.find_one({"_id": username})
+        if user is None:
+            return 0
+        if user["password"] == old_password:
+            self.users.update_one({"_id": username}, {"$set": {"password": new_password}})
+            return 2
+        else:
+            return 1
+    
+    def change_email(self, username, new_email):
+        self.users.update_one({"_id": username}, {"$set": {"email": new_email}})
+
+    def get_user_email(self, username):
+        return self.users.find_one({"_id": username})["email"]
 
 
     def delete_user(self, username):
         self.users.delete_one({"_id": username})
 
     def delete_room(self, room_name):
-        self.rooms.delete_one({"_id": room_name})
+        self.archive.move_one({"_id": room_name})
+        #self.rooms.delete_one({"_id": room_name})
 
     def delete_archive(self, room_name):
         self.archive.delete_one({"_id": room_name})
@@ -297,8 +340,8 @@ class mongo_permission:
 
 
 if __name__ == "__main__":
-    chat_db = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net")
-    #chat_db.delete_all()
-    #chat_db.add_user("noam", "password")
-    chat_db.add_permission("noam", "server_admin")
-    print(chat_db.get_rooms_list())
+    cdb = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net")
+    #cdb.delete_all()
+    #cdb.add_user("noam", "password")
+    cdb.add_permission("noam", "server_admin")
+    print(cdb.get_rooms_list())
