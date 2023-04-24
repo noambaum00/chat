@@ -90,9 +90,11 @@ def multi_threaded_client(client_socket , db):
     
     if db.login(username, password) == 2:
         if db.is_server_admin(username):
+            isadmin = True
             client_socket.send(("admin\n").encode())
         else:
             client_socket.send(("user\n").encode())
+            isadmin = False
 
         # if the user is not an admin, add the user to the list of connected
         # clients and set the user's status to "user"
@@ -117,7 +119,14 @@ def multi_threaded_client(client_socket , db):
                         client_socket.send(str(clients).encode())
 
                     elif command[:4] == "dlr:":
-                        dlr(command[4:], client_socket)
+                            # delete the room from the list of rooms
+                        for room in rooms:
+                            if room["name"] == room_name:
+                                rooms.remove(room)
+                        # send a confirmation message to the admin
+                        client_socket.send(("Room deleted").encode())
+
+
                         
 
                     elif command[:4] == "kcu:":
@@ -155,7 +164,7 @@ def multi_threaded_client(client_socket , db):
                         db.add_room(room_name, username)
                         room = {"name": room_name, "clients": []}
                         rooms.append(room)
-                        client_socket..send(("Room created").encode())
+                        client_socket.send(("Room created").encode())
                     except:
                         client_socket.send(("error").encode())
 

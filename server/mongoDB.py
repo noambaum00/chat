@@ -23,10 +23,16 @@ class ChatDB:
                 "users": [],
                 "messages": []}
         self.rooms.insert_one(room)
+        add_user_to_room(admin, room_name)
 
     def add_user_to_room(self, username, room_name):
-        self.rooms.update_one({"_id": room_name}, {"$push": {"users": username}})
-        self.users.update_one({"_id": username}, {"$push": {"rooms": room_name}})
+        try:
+            self.rooms.find_one{"_id": room_name}
+            self.rooms.update_one({"_id": room_name}, {"$push": {"users": username}})
+            self.users.update_one({"_id": username}, {"$push": {"rooms": room_name}})
+            return True
+        except:
+            return False
 
     def remove_user_from_room(self, username, room_name):
         self.rooms.update_one({"_id": room_name}, {"$pull": {"users": username}})
