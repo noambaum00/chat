@@ -44,12 +44,33 @@ class ChatDB:
         except:
             return False
 
+    def unban_user_from_room(self, username, room_name):
+        try:
+            self.rooms.find_one({"_id": room_name})
+            self.rooms.update_one({"_id": room_name}, {"$pull": {"banned": username}})
+            self.users.update_one({"_id": username}, {"$pull": {"rooms": room_name}})
+            return True
+        except:
+            return False
+        
+    def allowed_user_in_room(self, username, room_name):
+        try:
+            return username in self.rooms.find_one({"_id": room_name})["banned"]
+        except:
+            return False
+        
     def remove_user_from_room(self, username, room_name):
         try:
             self.rooms.find_one({"_id": room_name})
             self.rooms.update_one({"_id": room_name}, {"$pull": {"users": username}})
             self.users.update_one({"_id": username}, {"$pull": {"rooms": room_name}})
             return True
+        except:
+            return False
+    
+    def user_inside_room(self, username, room_name):
+        try:
+            return username in self.rooms.find_one({"_id": room_name})["users"]
         except:
             return False
 
@@ -73,7 +94,7 @@ class ChatDB:
     def get_rooms(self, username):#make working
         return self.users.find_one({"_id": username})["rooms"]
 
-    def get_users(self, room_name):
+    def get_users_in_room(self, room_name):
         return self.rooms.find_one({"_id": room_name})["users"]
 
     def get_room_admin(self, room_name):

@@ -47,9 +47,6 @@ def jnr(room_name,username,s):
     # send a confirmation message to the user
     s.send((room_name + " joined\n").encode())
 
-def adr(username, roomname, s):
-    db.add_user_to_room(username, roomname)
-    s.send(("room added to user " + username).encode())
 
 def lvr(username,s):
     # leave the room
@@ -103,13 +100,3 @@ def msg(message, room_name ,s, clients, isadmin):
 
     # send a confirmation message to the user
     s.send(("Message sent").encode())
-
-
-def dm(message, receive, s, clients, isadmin):
-    for client_socket in clients:
-        if clients[client_socket] == receive:
-            if isadmin:
-                client_socket.send(("admin>> " + message + "\n").encode())
-            else:
-                client_socket.send((message + "\n").encode())
-            break

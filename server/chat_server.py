@@ -177,9 +177,14 @@ def multi_threaded_client(client_socket , db):
                     client_socket.send(str(rooms).encode())
 
                 elif command[:4] == "jnr:":
-                    if db.allowsUserInRoom(username) == True:
-                        room_name = command[4:]
-                        jnr(room_name,username,client_socket)
+                    room_name = command[4:]
+                    if db.allowed_user_in_room(username,room_name) == True:
+                        db.add_user_to_room(username, room_name)  
+                        for room in rooms:
+                            if room["name"] == room_name:
+                                room["clients"].append(username)
+                        # send a confirmation message to the user
+                        client_socket.send((room_name + " joined\n").encode())
                     else:
                         send(client_socket, "you not allow in her.\n")
                         
