@@ -2,24 +2,24 @@ import socket
 import ssl
 
 class connection:
-    def __init__(self, conn):
-        self.conn = conn
+    def __init__(self, sock):
+        self.sock = sock
 
     
     def send(self, data):
-        self.conn.send(data.encode())
+        self.sock.send(data.encode())
     
     def recv(self):
         try:
             a = ''
             while(len(a) < 3):
-                a= self.conn.recv(1024).decode().replace('\r\n', '')
+                a= self.sock.recv(1024).decode().replace('\r\n', '')
             return a
         except ConnectionResetError:
-            stop_threads = True
+             self.close()
 
     def close(self):
-        self.conn.close()
+        self.sock.close()
 
 
 class SSLConnection:
@@ -30,8 +30,8 @@ class SSLConnection:
     def send(self, data):
         return self.ssl_sock.send(data)
         
-    def recv(self, bufsize):
-        return self.ssl_sock.recv(bufsize)
+    def recv(self):
+        return self.ssl_sock.recv()
         
     def close(self):
         self.ssl_sock.close()
