@@ -244,7 +244,7 @@ def multi_threaded_client(sock , db):
 
                 
                 if error_chack == True:
-                    sock,send(command + " : not found")
+                    sock.send(command + " : not found")
                     pass
 
                 
