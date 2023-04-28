@@ -2,7 +2,9 @@ import socket
 from mongoDB import ChatDB
 import os
 from _thread import *
-from chat_commend import *
+
+#global variables
+global rooms
 
 HELP_MASSAGE = """
 the list comend is:
@@ -26,11 +28,13 @@ ADMIN_COMMENDS= """
 \tachp: = admin change password
 \text: = exit
 """
-#connect db
-db = ChatDB("mongodb+srv://noambaum:noambaums@cluster0.ec4wlbs.mongodb.net")
 
 def main():
-    
+    #connect db
+    db = ChatDB("mongodb+srv://noambaum:noambaums@cluster0.ec4wlbs.mongodb.net")
+    rooms = []
+    rooms = db.get_rooms_list()
+
 
     # create a socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -111,10 +115,12 @@ def multi_threaded_client(client_socket , db):
                 # receive the user's command
                 command = get(client_socket)
 
+
+
                 error_chack = False
 
                 if isadmin:
-
+                    #admin staff
                     if command[:4] == "lsu:":
                         client_socket.send(str(clients).encode())
 
@@ -130,17 +136,15 @@ def multi_threaded_client(client_socket , db):
                         else:
                             client_socket.send(("{username} non room admin").encode())
                         
-
-
-                        
-
-                    elif command[:4] == "kcu:":
-                        kcu(command[4:], client_socket, clients)
+                    
 
                     elif command[:4] == "dlu:":
-                        dlu(command[4:], client_socket)
-                    
-                    elif command[:4] == "ext:":
+                    # delete the user from the list of connected clients
+                        db.delete_user(command[4:], username)
+                        client_socket.send(("User deleted").encode())
+
+                                        
+                    elif command[:9] == "shutdown:":
                         db.close()
                         os.close()
 
@@ -160,10 +164,10 @@ def multi_threaded_client(client_socket , db):
                             client_socket.send(("Please try again.").decode())
 
                     else:
-                        error_chack = True
+                        error_chack += 1
                     
                     
-
+                # user staff
                 elif command[0:4] == "crr:":
                     try:
                         db.add_room(room_name, username)
@@ -188,19 +192,25 @@ def multi_threaded_client(client_socket , db):
                     else:
                         send(client_socket, "you not allow in her.\n")
                         
+                
                 elif command[:4] == "lvr:":
-                    lvr(username,client_socket)
+                    room_name = command[4:]
+                    for room in rooms:
+                        if room["name"] == room_name:
+                            room["clients"].remove(username)
+                            # send a confirmation message to the user
+                            db.delete_user_from_room(username, room_name)
+                            client_socket.send((room_name + " left\n").encode())
+
 
                 elif command[:5] == "lcur:":
-                    lcur(room_name, client_socket)
-
-                elif command[:4] == "msg:":
+                    if db.user_inside_room(username, room_name):
+                        db.get_users_in_room(room_name)
+                        
+                elif command[:4] == "msg:": #todo wrote this again.
+                    break
                     message =username + ": " + command[4:]
                     msg(message, room_name, client_socket, clients, isadmin)
-
-                elif command[:3] == "dm:":
-                    message = username + ": " + command[4:].strip(",")
-                    dm(message[0], message[1], client_socket, clients, isadmin)
 
                 elif command[:4] == "hlp":
                     client_socket.send(HELP_MASSAGE.encode())
@@ -208,16 +218,19 @@ def multi_threaded_client(client_socket , db):
                 elif command[:4] == "ext:":
                     # close the admin's connection
                     client_socket.close()
-                    return
+                    return 0
+                    break
+                
+                
 
 
-                elif command[:4] == "chp:":#---------------------- add function to mongoDb class
+                elif command[:4] == "chp:":
                     command = command[:4].split(",")
 
-                    if db.change_password(username, command[1], command[2]):
+                    if db.change_password(username, command[1], command[2])==1:
                     # Do something if the password was successfully updated
                         client_socket.send(("Your password has been changed.").decode())
-                    else:
+                    else: #todo add errors messages
                     # Do something if the password change failed
                         client_socket.send(("Please try again.").decode())
 

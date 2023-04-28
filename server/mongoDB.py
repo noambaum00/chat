@@ -91,6 +91,12 @@ class ChatDB:
     def get_all_users(self):
         return self.users.find()
 
+    def get_all_users_array(self):
+        users = []
+        for user in self.users.find():
+            users.append(user["_id"])
+        return users
+
     def get_rooms(self, username):#make working
         return self.users.find_one({"_id": username})["rooms"]
 
@@ -122,7 +128,7 @@ class ChatDB:
         return self.users.find()
 
     def get_rooms_list(self):
-        return self.rooms.find()
+        return self.rooms.find_one()
 
     def get_user(self, username):
         return self.users.find_one({"_id": username})
@@ -364,5 +370,7 @@ if __name__ == "__main__":
     cdb = ChatDB("mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net")
     #cdb.delete_all()
     #cdb.add_user("noam", "password")
-    cdb.add_permission("noam", "server_admin")
+    #cdb.add_permission("noam", "server_admin")
+    print(cdb.get_all_users_array())
     print(cdb.get_rooms_list())
+    cdb.close()

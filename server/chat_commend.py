@@ -4,7 +4,6 @@ from chat_server import db
 from mongoDB import ChatDB
 
 # create a list of rooms
-global rooms
 
 rooms = []
 rooms = db.get_rooms_list()
@@ -23,6 +22,7 @@ def lsr(s):
 
 def lsu(s,clients):
     # send the list of connected users to the admin
+    pass
     
 
 def crr(room_name,s):
