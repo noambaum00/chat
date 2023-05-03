@@ -1,9 +1,10 @@
+import sys
 import socket
 from mongoDB import ChatDB
 import os
 from _thread import *
 from MYconnection import connection
-
+import atexit
 #global variables
 global rooms
 
@@ -32,12 +33,14 @@ ADMIN_COMMENDS= """
 
 def main():
     #connect db
+    global db
     db = ChatDB("mongodb+srv://noambaum:noambaums@cluster0.ec4wlbs.mongodb.net")
     rooms = []
-    rooms = db.get_rooms_list()
+    #rooms = db.get_rooms_list()
 
 
     # create a socket object
+    global server_socket
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # get local machine name
@@ -67,7 +70,8 @@ def main():
     global clients
     clients = {}
 
-
+    # start a new thread for the admin terminul command loop
+    start_new_thread(terminal_command_loop())
     while True:
         # establish a connection
         client_socket, addr = server_socket.accept()
@@ -83,8 +87,8 @@ def main():
 
 def multi_threaded_client(sock , db):
     
-    global stop_threads
-    stop_threads = False
+    global stop_thread
+    stop_thread = False
     # send a thank you message to the client
     sock.send("Thank you for connecting")
 
@@ -107,12 +111,10 @@ def multi_threaded_client(sock , db):
         # clients and set the user's status to "user"
         clients[sock] = username
                 
-        #join loby
-
         # receive the user's commands and act on them
         while True:
             try:
-                if stop_threads == True:
+                if stop_thread == True:
                     break
                 
                 # receive the user's command
@@ -271,13 +273,25 @@ def multi_threaded_client(sock , db):
 
 
 
+def terminal_command_loop():
+    pass
+    print("Terminal command")
+    return 1
+
+@atexit.register
+def say_goodbye():
+    for client in clients:
+        client.send("goodbye\n")
+        client.close()
+        clients.pop(client)
+        ThreadCount -= 1
+        print('Thread Number:'+ str(ThreadCount))
+    db.close()
+    server_socket.close()
+    print("Goodbye")
+    sys.exit(0)
 
 
-
-print(ADMIN_COMMENDS + "\n\n\n" + HELP_MASSAGE)
-main()
-
-"""try:
+if __name__ == "__main__":
+    print(ADMIN_COMMENDS + "\n\n\n" + HELP_MASSAGE)
     main()
-except:
-    print(error)"""
