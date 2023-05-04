@@ -34,9 +34,9 @@ ADMIN_COMMENDS= """
 def main():
     #connect db
     global db
+    print("connecting to db")
     db = ChatDB("mongodb+srv://noambaum:noambaums@cluster0.ec4wlbs.mongodb.net")
-    rooms = []
-    #rooms = db.get_rooms_list()
+    rooms = db.get_rooms_list()
 
 
     # create a socket object
@@ -45,15 +45,11 @@ def main():
 
     # get local machine name
     host = "127.0.0.1"
-
     port = 585
-
-    print("STSRT")
-
+    print("STSRTING")
     # bind to the port
     server_socket.bind((host, port))
-
-    print("BIND")
+    print("BINDED")
 
     # queue up to 50 requests
     server_socket.listen(50)
@@ -66,12 +62,12 @@ def main():
 
 
     # create a dictionary of connected clients, with the key being the client's
-    # socket and the value being the client's username
+    # socket and the value being the client's username; need to anderstand whay it is
     global clients
     clients = {}
 
     # start a new thread for the admin terminul command loop
-    start_new_thread(terminal_command_loop())
+    #start_new_thread(terminal_command_loop(""))#--------------------------------------------
     while True:
         # establish a connection
         client_socket, addr = server_socket.accept()
@@ -118,7 +114,7 @@ def multi_threaded_client(sock , db):
                     break
                 
                 # receive the user's command
-                command = sock.recv()
+                command = sock.recv().split(':')
 
 
 
@@ -126,10 +122,10 @@ def multi_threaded_client(sock , db):
 
                 if isadmin:
                     #admin staff
-                    if command[:4] == "lsu:":#todo use mongo function
+                    if command[0] == "lsu":#todo use mongo function
                         sock.send(str(clients).encode())
 
-                    elif command[:4] == "dlr:":
+                    elif command[0] == "dlr":
                             # delete the room from the list of rooms
                         if db.is_room_admin(command[4:], username):
                             for room in rooms:
@@ -141,27 +137,26 @@ def multi_threaded_client(sock , db):
                         else:
                             sock.send("{username} non room admin")
                         
-                    
 
-                    elif command[:4] == "dlu:":
+                    elif command[0] == "dlu":
                     # delete the user from the list of connected clients
-                        db.delete_user(command[4:], username)
+                        db.delete_user(command[1], username)
                         sock.send("User deleted")
 
                                         
-                    elif command[:9] == "shutdown:":
+                    elif command[0] == "shutdown":
                         db.close()
                         os.close()
 
-                    elif command[:5] == "dlta":
-                        if command[5:] == "secretPassward":
+                    elif command[0] == "dlta":
+                        if command[1] == "secretPassward":
                             db.deleteAll()
                         else:
                             sock.send("wrong passward")
                     
-                    elif command[:5] == "achp:":#---------------------------------need to add function to mongoDB class.
-                        command = command[:5].split(",")
-                        if db.admin_change_password(db, command[1], command[2]):
+                    elif command[0] == "achp":#---------------------------------need to add function to mongoDB class.
+                        commandor = command[2].split(",")
+                        if db.admin_change_password(db, commandor[1], commandor[2]):
                             # Do something if the password was successfully updated
                             sock.send("Your password has been changed.")
                         else:
@@ -173,7 +168,7 @@ def multi_threaded_client(sock , db):
                     
                     
                 # user staff
-                elif command[0:4] == "crr:":
+                elif command[0] == "crr":
                     try:
                         db.add_room(room_name, username)
                         room = {"name": room_name, "clients": []}
@@ -182,12 +177,14 @@ def multi_threaded_client(sock , db):
                     except:
                         sock.send("error")
 
-                if command[:4] == "lsr:":
+                if command[0] == "lsr":
                     sock.send(str(rooms))
 
-                elif command[:4] == "jnr:":
-                    room_name = command[4:]
-                    if db.allowed_user_in_room(username,room_name) == True:
+                elif command[0] == "jnr":
+                    room_name = command[1]
+                    if not db.room_exists(room_name):
+                        socket.send("room anexisting")
+                    elif db.allowed_user_in_room(username,room_name):
                         db.add_user_to_room(username, room_name)  
                         for room in rooms:
                             if room["name"] == room_name:
@@ -198,8 +195,8 @@ def multi_threaded_client(sock , db):
                         sock.send("you are not allow in her.\n")
                         
                 
-                elif command[:4] == "lvr:":
-                    room_name = command[4:]
+                elif command[0] == "lvr":
+                    room_name = command[1]
                     for room in rooms:
                         if room["name"] == room_name:
                             room["clients"].remove(username)
@@ -207,19 +204,19 @@ def multi_threaded_client(sock , db):
                             db.delete_user_from_room(username, room_name)
                             sock.send(room_name + " left\n")
 
-                elif command[:5] == "lcur:":
-                    if db.user_inside_room(username, command[5:]):
+                elif command[0] == "lcur":
+                    if db.user_inside_room(username, command[1]):
                         db.get_users_in_room(room_name)
                         
-                elif command[:4] == "msg:": #todo wrote this again.
+                elif command[0] == "msg": #todo wrote this again.
                     break
                     message =username + ": " + command[4:]
                     msg(message, room_name, client_socket, clients, isadmin)
 
-                elif command[:4] == "hlp":
+                elif command[0] == "hlp":
                     sock.send(HELP_MASSAGE)
 
-                elif command[:4] == "ext:":
+                elif command[0] == "ext":
                     # close the admin's connection
                     sock.close()
                     return 0
@@ -228,10 +225,10 @@ def multi_threaded_client(sock , db):
                 
 
 
-                elif command[:4] == "chp:":
-                    command = command[:4].split(",")
+                elif command[0] == "chp":
+                    commandor = command[2].split(",")
 
-                    if db.change_password(username, command[1], command[2])==1:
+                    if db.change_password(username, commandor[1], commandor[2])==1:
                     # Do something if the password was successfully updated
                         sock.send("Your password has been changed.")
                     else: #todo add errors messages
@@ -276,7 +273,7 @@ def multi_threaded_client(sock , db):
 
 
 
-def terminal_command_loop():
+def terminal_command_loop(a):
     pass
     print("Terminal command")
     return 1
@@ -296,5 +293,5 @@ def say_goodbye():
 
 
 if __name__ == "__main__":
-    print(ADMIN_COMMENDS + "\n\n\n" + HELP_MASSAGE)
+    print(ADMIN_COMMENDS + "" + HELP_MASSAGE)
     main()
