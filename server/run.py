@@ -1,6 +1,9 @@
 import subprocess
 import time
 import socket
+import platform
+import os
+
 
 # Define the path to the server code and the command to start the server
 SERVER_PATH = r'C:\\Users\\noamb\Documents\\GitHub\\telnet_chan_noam\server'
@@ -20,9 +23,20 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 print(f'Server socket bound to {HOST}:{PORT}')
 
-# Start the server process and pass the server socket to it
+# Determine the platform and define the command to open a new command line window
+if platform.system() == 'Windows':
+    OPEN_CMD_COMMAND = 'start cmd /k'
+else:
+    if os.environ.get('DESKTOP_SESSION'):
+        OPEN_CMD_COMMAND = 'gnome-terminal --'
+    else:
+        OPEN_CMD_COMMAND = 'xterm -e'
+
+# Start the server process in a new command line window and pass the server socket to it
+server_command = f'{OPEN_CMD_COMMAND} "{START_COMMAND} && pause"'
+
 server_process = subprocess.Popen(
-    START_COMMAND.split(),
+    server_command,
     cwd=SERVER_PATH,
     stdin=subprocess.PIPE,
     stdout=subprocess.PIPE,
@@ -42,12 +56,15 @@ while True:
         print('Restarting server...')
         server_process.terminate()
         time.sleep(2)  # Wait for the server process to terminate
-        # Start the server process again and pass the new server socket to it
+        # Start the server process again in a new command line window and pass the new server socket to it
         server_socket.close()  # Close the old server socket
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a new server socket
         server_socket.bind((HOST, PORT))  # Bind the new server socket to the address and port
+
+        server_command = f'{OPEN_CMD_COMMAND} "{START_COMMAND} && pause"'
+
         server_process = subprocess.Popen(
-            START_COMMAND.split(),
+            server_command,
             cwd=SERVER_PATH,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
