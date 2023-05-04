@@ -12,25 +12,12 @@ from MYconnection import connection
 #global variables
 global rooms
 
-def main():
+def main(server_socket):
     #connect db
     global db
     print("connecting to db")
     db = ChatDB("mongodb+srv://noambaum:noambaums@cluster0.ec4wlbs.mongodb.net")
     rooms = db.get_rooms_list()
-
-
-    # create a socket object
-    global server_socket
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # get local machine name
-    host = "127.0.0.1"
-    port = 585
-    print("STSRTING")
-    # bind to the port
-    server_socket.bind((host, port))
-    print("BINDED")
 
     # queue up to 50 requests
     server_socket.listen(50)
@@ -268,8 +255,8 @@ def say_goodbye():
         ThreadCount -= 1
         print('Thread Number:'+ str(ThreadCount))
     db.close()
-    server_socket.close()
     print("Goodbye")
+    
     sys.exit(0)
 
 
