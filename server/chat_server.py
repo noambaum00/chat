@@ -1,35 +1,16 @@
 import sys
 import socket
-from mongoDB import ChatDB
 import os
 from _thread import *
-from MYconnection import connection
 import atexit
+
+from defins import *
+from mongoDB import ChatDB
+from MYconnection import connection
+
+
 #global variables
 global rooms
-
-HELP_MASSAGE = """
-the list comend is:
-\tlsr: = list room
-\tjnr: = join room
-\tlvr: = leave room
-\tlsur:= list users in room
-\tmsg: = send message
-\tadr: = add room to user list
-\texit
-\thelp
-\tchange_password
-"""
-ADMIN_COMMENDS= """
-\tcrr: = crieit room
-\tdlr: = delete room
-\tdlu: = delete user
-\tlsr: = list room
-\tlsur:= list users in room
-\tkcu: = kick user
-\tachp: = admin change password
-\text: = exit
-"""
 
 def main():
     #connect db
