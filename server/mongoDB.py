@@ -74,19 +74,31 @@ class ChatDB:
         except:
             return False
 
-    def add_message(self, username, room_name, message):
-        message = {"_id": username,
-                   "message": message,
-                   "time": datetime.datetime.now()}
-        self.rooms.update_one({"_id": room_name}, {"$push": {"messages": message}})
+    def add_message(self, json):
+        for message in json:
+            room_name = message["room_name"]
+            self.rooms.update_one({"_id": room_name}, {"$push": {"messages": message}})
 
     def get_all_messages(self, room_name):
         return self.rooms.find_one({"_id": room_name})["messages"]
+
     
-    def get_messages_from(self, room_name, time_from):
-        return self.rooms.find_one({"_id": room_name})["messages"][time_from:]
+    def get_messages_from_time(self, room_name, time_from, time_to):
+        self.rooms.find_one({"_id": room_name})["messages"][time_from:]
+        self.rooms.find({
+            created_at: {
+                $gte: ISODate(time_from),
+                $lte: ISODate(time_to),
+            }
+})
+
+
         
-    
+    def get_messages_for_user_from_time(self,user_name, time_from, time_to):
+        arr = []
+        for room in self.users.find_one({"_id": user_name})["rooms"]:
+            arr.append(self.get_messages_from_time(room,time_from,time_to))
+        return arr
 
     def get_all_users(self):
         return self.users.find()

@@ -3,6 +3,8 @@ import socket
 import os
 from _thread import *
 import atexit
+import json
+
 
 from defins import *
 from mongoDB import ChatDB
@@ -12,7 +14,23 @@ from MYconnection import connection
 #global variables
 global rooms
 
-def main(server_socket):
+def main():
+    print("Starting server")
+
+    # create a socket object
+    global server_socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # get local machine name
+    host = "127.0.0.1"
+    port = 585
+    print("STSRTING")
+    # bind to the port
+    server_socket.bind((host, port))
+    print("BINDED")
+
+
+
     #connect db
     global db
     print("connecting to db")
@@ -246,7 +264,7 @@ def terminal_command_loop(a):
     print("Terminal command")
     return 1
 
-@atexit.register
+"""@atexit.register
 def say_goodbye():
     for client in clients:
         client.send("goodbye\n")
@@ -256,9 +274,9 @@ def say_goodbye():
         print('Thread Number:'+ str(ThreadCount))
     db.close()
     print("Goodbye")
-    
+    server_socket.close()
     sys.exit(0)
-
+"""
 
 if __name__ == "__main__":
     print(ADMIN_COMMENDS + "" + HELP_MASSAGE)
