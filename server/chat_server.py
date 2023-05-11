@@ -260,7 +260,6 @@ def multi_threaded_client(sock , db):
 
 
 def terminal_command_loop(a):
-    pass
     print("Terminal command")
     return 1
 
