@@ -68,9 +68,6 @@ def main():
 
 
 def multi_threaded_client(sock , db):
-    
-    global stop_thread
-    stop_thread = False
     # send a thank you message to the client
     sock.send("Thank you for connecting")
 
@@ -123,13 +120,10 @@ def multi_threaded_client(sock , db):
                         else:
                             sock.send("{username} non room admin")
                         
-
-                    elif command[0] == "dlu":
-                    # delete the user from the list of connected clients
+                    elif command[0] == "dlu":# delete the user from the list of connected clients
                         db.delete_user(command[1], username)
                         sock.send("User deleted")
 
-                                        
                     elif command[0] == "shutdown":
                         db.close()
                         os.close()
@@ -180,7 +174,6 @@ def multi_threaded_client(sock , db):
                     else:
                         sock.send("you are not allow in her.\n")
                         
-                
                 elif command[0] == "lvr":
                     room_name = command[1]
                     for room in rooms:
@@ -207,9 +200,6 @@ def multi_threaded_client(sock , db):
                     sock.close()
                     return 0
                     break
-                
-                
-
 
                 elif command[0] == "chp":
                     commandor = command[2].split(",")

@@ -81,19 +81,16 @@ class ChatDB:
 
     def get_all_messages(self, room_name):
         return self.rooms.find_one({"_id": room_name})["messages"]
-
-    
+ 
     def get_messages_from_time(self, room_name, time_from, time_to):
         self.rooms.find_one({"_id": room_name})["messages"][time_from:]
         self.rooms.find({
-            created_at: {
-                $gte: ISODate(time_from),
-                $lte: ISODate(time_to),
+            "time": {
+                "$gte": ISODate(time_from),
+                "$lte": ISODate(time_to),
             }
-})
-
-
-        
+        })
+    
     def get_messages_for_user_from_time(self,user_name, time_from, time_to):
         arr = []
         for room in self.users.find_one({"_id": user_name})["rooms"]:
@@ -190,7 +187,6 @@ class ChatDB:
     def get_user_email(self, username):
         return self.users.find_one({"_id": username})["email"]
 
-
     def delete_user(self, username):
         self.users.delete_one({"_id": username})
 
@@ -217,9 +213,6 @@ class ChatDB:
 
     def close(self):
         self.client.close()
-
-
-
 
 
 class mongo_permission:
@@ -372,10 +365,6 @@ class mongo_permission:
 
     def remove_server_guest(self, username, room_name):
         self.users.update_one({"_id": username}, {"$pull": {"guests": username}})
-
-
-
-
 
 
 if __name__ == "__main__":
