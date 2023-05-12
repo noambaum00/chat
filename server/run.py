@@ -107,10 +107,6 @@ while True:
             error = True
             send_notification('Error', 'The program is not running.')
 
-    except:
-        # if an error occurs, set the error flag and send a notification
-        error = True
-        send_notification('Error', 'An error has occurred in the program.')
 
     if error:
         # if an error occurred, kill the process and restart the loop
