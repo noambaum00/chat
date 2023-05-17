@@ -214,6 +214,8 @@ def multi_threaded_client(sock , db):
                 elif command == "hlp":
                     sock.send(HELP_MASSAGE)
 
+                elif command == "pas":
+                    pass
                 else:
                     error_chack = True
 
