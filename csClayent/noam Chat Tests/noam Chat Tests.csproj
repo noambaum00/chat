@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>naom_Chat_Tests</RootNamespace>
   </PropertyGroup>
 
@@ -23,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Chit Chat\noam Chat.csproj" />
+    <ProjectReference Include="..\noam Chat\noam Chat.csproj" />
   </ItemGroup>
 
 </Project>
