@@ -5,17 +5,17 @@ import requests
 import json
 
 # set the GitHub repository URL and the path to the local repository
-github_repo = 'https://github.com/<username>/<repository>.git'
-local_repo = '/path/to/local/repo'
+github_repo = 'https://github.com/noambaum/chat.git'
+local_repo = '"C:\chat"'
 
 # set the command to run the code from the local repository
-run_command = 'python main.py'
+run_command = 'python chat_server.py'
 
 # set the loop delay in seconds
 loop_delay = 60
 
 # set the Pushbullet API key and device ID
-api_key = '<your_pushbullet_api_key>'
+api_key = 'o.bRWaFQi3vmfxjXYobJXxkdABWQWbaqec'
 device_id = 'uju2QWs1fK8sjzBZpUJ99E'
 
 # initialize the process and error variables
@@ -34,8 +34,12 @@ def send_notification(title, message):
         'body': message
     }
     url = 'https://api.pushbullet.com/v2/devices/' + device_id + '/pushes'
+    print(str(headers + "\n"))
+    print(str(json.dumps(data)))
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
+send_notification("hay", "i exest")
+"""
 while True:
     try:
         # check if user input is available
@@ -70,7 +74,7 @@ while True:
 
     except KeyboardInterrupt:
         # if the user interrupts the program, prompt for action
-        action = input('\nDo you want to (u)pdate or (s)top the program? ')
+        action = input('\nDo you want to Update or Stop the program? ')
 
         if action.lower() == 'u':
             # if the user wants to update, pull the latest code and restart the loop
@@ -81,7 +85,7 @@ while True:
             # if the user wants to stop, kill the process and exit the loop
             if process is not None:
                 process.kill()
-            send_notification('Program stopped', 'The program has been stopped by the user.')
+            send_notification('the program is not ok', 'The program has been killed with cold hands by the user.')
             break
 
         else:
@@ -91,7 +95,7 @@ while True:
     except:
         # if an error occurs, set the error flag and send a notification
         error = True
-        send_notification('Error', 'An error has occurred in the program.')
+        send_notification('Error', 'An error has occurred in the program, ')# + str(e))
 
     if error:
         # if an error occurred in
@@ -114,3 +118,4 @@ while True:
             process.kill()
         time.sleep(5)
         continue
+"""
