@@ -34,8 +34,6 @@ def send_notification(title, message):
         'body': message
     }
     url = 'https://api.pushbullet.com/v2/devices/' + device_id + '/pushes'
-    print(str(headers + "\n"))
-    print(str(json.dumps(data)))
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
 send_notification("hay", "i exest")
