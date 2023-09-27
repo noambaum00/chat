@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="i have no cku what i doimg">
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:label="@string/chatnoam" android:supportsRtl="true"></application>
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCEPT_HANDOVER" />
+	<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+	<uses-permission android:name="android.permission.ACCESS_BLOBS_ACROSS_USERS" />
+	<uses-permission android:name="android.permission.ACCESS_CHECKIN_PROPERTIES" />
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+	<uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+	<uses-sdk />
+</manifest>

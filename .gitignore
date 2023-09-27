@@ -358,5 +358,4 @@ tempCodeRunnerFile.python
 tempCodeRunnerFile.py
 *.pyc
 .vscode/launch.json
-*.xml
 *.iml
