@@ -36,6 +36,6 @@ def login() -> Optional[RedirectResponse]:
         password = ui.input('Password', password=True, password_toggle_button=True)
         ui.button('Log in', on_click=try_login)
         ui.button('signup',on_click=lambda: ui.open('signup'))
-        ui.link('/forgot_password', 'Forgot Password?')  # Link to the "Forgot Password" page
+        ui.link('Forgot Password?' , '/forgot_password')  # Link to the "Forgot Password" page
 
 
