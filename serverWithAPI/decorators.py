@@ -3,28 +3,23 @@
 from functools import wraps
 from flask import request, abort
 from . import ROLES
+import jwt
 
-def require_privilege(privilege):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            token = request.headers.get('Authorization')
-            if not token:
-                abort(401)  # Unauthorized - Token not provided
+SECRET_KEY = 'your_secret_key'  # Replace with your secret key
 
-            # In a real application, you would validate the token and get the user's role
-            # For the sake of simplicity, let's assume the role is included in the token
-            user_role = extract_user_role_from_token(token)
-
-            if user_role is None or privilege not in ROLES.get(user_role, []):
-                abort(403)  # Forbidden - User doesn't have the required privilege
-
-            return func(*args, **kwargs)
-
-        return wrapper
-    return decorator
+def generate_token(username, role):
+    payload = {
+        'username': username,
+        'role': role
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+    return token.decode('utf-8')
 
 def extract_user_role_from_token(token):
-    # In a real application, you would implement logic to extract the user's role from the token
-    # For demonstration purposes, let's assume the role is included in the token as a header
-    return request.headers.get('X-User-Role')
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        return payload.get('role')
+    except jwt.ExpiredSignatureError:
+        abort(401)  # Unauthorized - Token has expired
+    except jwt.InvalidTokenError:
+        abort(401)  # Unauthorized - Invalid token

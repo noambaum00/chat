@@ -2,9 +2,13 @@
 
 from flask import Flask, jsonify, url_for
 from routes import  user_management, room_management
+from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key_for_demo_purposes'
+app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # Change this to a secure key in production
+
+jwt = JWTManager(app)
 
 # Define user roles and associated privileges
 ROLES = {

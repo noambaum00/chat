@@ -8,7 +8,7 @@ from ..decorators import require_privilege
 rooms = ['room1', 'room2', 'room3']
 
 @app.route('/api/rooms', methods=['GET'])
-@require_privilege('manage_rooms')
+@require_privilege('    ')
 def get_rooms():
     return jsonify(rooms)
 
@@ -23,6 +23,16 @@ def add_room():
 
     rooms.append(room_name)
     return jsonify({'message': f'Room {room_name} added successfully'})
+
+
+@app.route('/api/rooms/<room>', methods=['DELETE'])
+@require_privilege('manage_rooms')
+def delete_room(room):
+    if room not in rooms:
+        abort(404)  # Not Found - Room not exists
+
+    rooms.remove(room)
+    return jsonify({'message': f'Room {room} deleted successfully'})
 
 @app.route('/api/rooms/<room>/messages', methods=['GET'])
 def get_room_messages(room):
@@ -58,3 +68,4 @@ def send_message(room):
     room_messages.append(new_message)
 
     return jsonify({'message': 'Message sent successfully'})
+
