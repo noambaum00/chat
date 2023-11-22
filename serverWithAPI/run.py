@@ -1,6 +1,6 @@
 # run.py
 
-from app import app
+import ..serverWithAPI 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    serverWithAPI.run(debug=True)
