@@ -1,25 +1,21 @@
 # app/decorators.py
 
 from functools import wraps
-from flask import request, abort
-from . import ROLES
-import jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import abort
 
-SECRET_KEY = 'your_secret_key'  # Replace with your secret key
+def require_privilege(privilege):
+    def decorator(func):
+        @wraps(func)
+        @jwt_required()
+        def wrapper(*args, **kwargs):
+            current_user = get_jwt_identity()
+            user_role = current_user.get('role')
 
-def generate_token(username, role):
-    payload = {
-        'username': username,
-        'role': role
-    }
-    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-    return token.decode('utf-8')
+            if user_role is None or privilege not in ROLES.get(user_role, []):
+                abort(403)  # Forbidden - User doesn't have the required privilege
 
-def extract_user_role_from_token(token):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        return payload.get('role')
-    except jwt.ExpiredSignatureError:
-        abort(401)  # Unauthorized - Token has expired
-    except jwt.InvalidTokenError:
-        abort(401)  # Unauthorized - Invalid token
+            return func(*args, **kwargs)
+
+        return wrapper
+    return decorator
