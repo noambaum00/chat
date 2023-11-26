@@ -1,13 +1,59 @@
 # app/routes/user_management.py
 
 from flask import jsonify, request, abort
-from ...serverWithAPI import app, ROLES, users, generate_token, require_privilege
+from ...serverWithAPI import app, mongo, jwt, users
 from ..decorators import require_privilege
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 
 # Assume rooms are stored in a simple list for demonstration purposes
 rooms = ['room1', 'room2', 'room3']
+
+@app.route('/api/users/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    email = data.get('email')
+    role = data.get('role', 'user')  # Default role is 'user'
+
+    if mongo.get_user_by_username(username):
+        abort(400)  # Bad Request - User already exists
+
+    if not email:
+        abort(400)  # Bad Request - Email is required
+
+    mongo.add_user(username, password, email, role)
+
+    # Create and return an access token for the new user
+    access_token = create_access_token(identity=str(mongo.get_user_by_username(username)['_id']), expires_delta=False)
+    return jsonify(access_token=access_token, message=f'User {username} signed up successfully'), 201
+
+@app.route('/api/users/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    user = mongo.get_user_by_username(username)
+
+    if not user or not mongo.verify_password(password, user['password']):
+        abort(401)  # Unauthorized - Incorrect username or password
+
+    # Create and return an access token for the logged-in user
+    access_token = create_access_token(identity=str(user['_id']), expires_delta=False)
+    return jsonify(access_token=access_token, message=f'User {username} logged in successfully'), 200
+
+@app.route('/api/users/profile', methods=['GET'])
+@jwt_required()
+def get_user_profile():
+    user_id = get_jwt_identity()
+    user = mongo.get_user_by_id(user_id)
+
+    if not user:
+        abort(404)  # Not Found - User not exists
+
+    return jsonify({'username': user['username'], 'email': user['email'], 'role': user['role']})
 
 @app.route('/api/users', methods=['GET'])
 @require_privilege('manage_users')
@@ -76,38 +122,6 @@ def join_room(username):
         users[username]['joined_rooms'].append(room_name)
 
     return jsonify({'message': f'User {username} joined room {room_name}'})
-
-@app.route('/api/users/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-
-    if username not in users or users[username]['password'] != password:
-        abort(401)  # Unauthorized - Incorrect username or password
-
-    access_token = create_access_token(identity={'username': username, 'role': users[username]['role']})
-    return jsonify(access_token=access_token), 200
-
-@app.route('/api/users/signup', methods=['POST'])
-def signup():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    email = data.get('email')
-    role = data.get('role', 'user')  # Default role is 'user'
-
-    if username in users:
-        abort(400)  # Bad Request - User already exists
-
-    if not email:
-        abort(400)  # Bad Request - Email is required
-
-    users[username] = {'password': password, 'role': role, 'email': email, 'joined_rooms': []}
-
-    # Create and return an access token for the new user
-    access_token = create_access_token(identity={'username': username, 'role': role})
-    return jsonify(access_token=access_token, message=f'User {username} signed up successfully'), 201
 
 @app.route('/api/start_service', methods=['POST'])
 @require_privilege('start_service')
