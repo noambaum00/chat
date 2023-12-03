@@ -1,15 +1,15 @@
 # app/routes/room_management.py
 
 from flask import jsonify, request, abort
-from ...serverWithAPI import app, rooms, require_privilege
+from ...serverWithAPI import app, rooms, require_privilege, mongo
 from ..decorators import require_privilege
 
 # Assume rooms are stored in a simple list for demonstration purposes
 rooms = ['room1', 'room2', 'room3']
 
 @app.route('/api/rooms', methods=['GET'])
-@require_privilege('    ')
 def get_rooms():
+    rooms = mongo.get_rooms()
     return jsonify(rooms)
 
 @app.route('/api/rooms', methods=['POST'])
@@ -18,12 +18,13 @@ def add_room():
     data = request.get_json()
     room_name = data.get('room_name')
 
-    if room_name in rooms:
-        abort(400)  # Bad Request - Room already exists
+    if not room_name:
+        abort(400)  # Bad Request - Room name is required
 
-    rooms.append(room_name)
+    # Add room to MongoDB
+    mongo.add_room(room_name)
+
     return jsonify({'message': f'Room {room_name} added successfully'})
-
 
 @app.route('/api/rooms/<room>', methods=['DELETE'])
 @require_privilege('manage_rooms')
@@ -48,24 +49,19 @@ def get_room_messages(room):
 
     return jsonify(room_messages)
 
-@app.route('/api/rooms/<room>/messages', methods=['POST'])
-def send_message(room):
-    if room not in rooms:
-        abort(404)  # Not Found - Room not exists
+@app.route('/api/rooms/<room_id>/messages', methods=['GET'])
+def get_room_messages(room_id):
+    room_messages = mongo.get_messages_in_room(room_id)
+    return jsonify(room_messages)
 
+@app.route('/api/rooms/<room_id>/messages', methods=['POST'])
+@require_privilege('send_messages')
+def send_message(room_id):
     data = request.get_json()
-    user = data.get('user')
+    user = get_jwt_identity()['username']
     message = data.get('message')
 
-    # You can modify this part to store the message for the specific room in your data structure
-    # For demonstration purposes, I'll create a simple structure to store messages
-    room_messages = [
-        {'user': 'user1', 'message': 'Hello from user1'},
-        {'user': 'user2', 'message': 'Hi there, user1!'},
-    ]
-
-    new_message = {'user': user, 'message': message}
-    room_messages.append(new_message)
+    # Add message to room and messages collection in MongoDB
+    mongo.add_message_to_room(room_id, user, message)
 
     return jsonify({'message': 'Message sent successfully'})
-

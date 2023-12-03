@@ -1,8 +1,9 @@
 # app/decorators.py
 
 from functools import wraps
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity 
 from flask import abort
+from ..serverWithAPI import ROLES
 
 def require_privilege(privilege):
     def decorator(func):
