@@ -3,7 +3,7 @@
 from flask import Flask, jsonify, url_for
 from routes import  user_management, room_management
 from flask_jwt_extended import JWTManager
-from .mongo import MongoDB
+from pymongo import MongoDB
 
 
 app = Flask(__name__)
