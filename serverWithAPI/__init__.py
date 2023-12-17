@@ -1,8 +1,10 @@
 # app/__init__.py
 
 from flask import Flask, jsonify, url_for
+from flask_restful import Resource
 from routes import  user_management, room_management
 from flask_jwt_extended import JWTManager
+from api_info import ApiInfo
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret_key_for_demo_purposes'
@@ -20,17 +22,8 @@ ROLES = {
 app.register_blueprint(user_management, url_prefix='/api')
 app.register_blueprint(room_management, url_prefix='/api')
 
-@app.route('/')
-def index():
-    routes = []
-    for rule in app.url_map.iter_rules():
-        if rule.endpoint != 'static':  # Exclude static files
-            routes.append({
-                'url': str(rule),
-                'methods': sorted(rule.methods - {'OPTIONS', 'HEAD'})
-            })
-
-    return jsonify({'routes': routes})
+Api.add_resource(ApiInfo, '/api/info', endpoint='api_info')
 
 if __name__ == '__main__':
     app.run(debug=True)
+    print(app.url_map.iter_rules())
