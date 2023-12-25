@@ -1,7 +1,7 @@
 import aiohttp
 from nicegui import ui
 
-class ChatSelectionScreen(ui.Block):
+class ChatSelectionScreen():
     def __init__(self, api_url):
         self.api_url = api_url
         self.get_rooms_button = ui.button('Get Rooms', on_click=self.get_rooms)

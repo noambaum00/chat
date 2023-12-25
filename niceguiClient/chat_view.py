@@ -1,7 +1,7 @@
 import aiohttp
 from nicegui import ui
 
-class ChatViewScreen(ui.Block):
+class ChatViewScreen():
     def __init__(self, api_url):
         self.api_url = api_url
         self.room_messages = ui.list([], height=300)

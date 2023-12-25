@@ -1,7 +1,7 @@
 import aiohttp
 from nicegui import ui
 
-class RegisterScreen(ui.Block):
+class RegisterScreen():
     def __init__(self, api_url):
         self.api_url = api_url
         self.username_input = ui.textbox('Username:')
