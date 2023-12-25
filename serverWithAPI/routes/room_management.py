@@ -1,8 +1,9 @@
 # app/routes/room_management.py
 
 from flask import jsonify, request, abort
-from ...serverWithAPI import app, rooms, require_privilege
+from ..defines import Defines
 from ..decorators import require_privilege
+from ..__init__ import df
 
 # Assume rooms are stored in a simple list for demonstration purposes
 rooms = ['room1', 'room2', 'room3']
