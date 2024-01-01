@@ -16,4 +16,5 @@ class Defines:
             'user': ['read_messages', 'send_messages', 'add_rooms','see_room', 'change_password'],
             'admin': ['read_messages', 'send_messages', 'manage_users', 'manage_rooms', 'start_service', 'close_service', 'force_change_password'],
         }
+
 global const

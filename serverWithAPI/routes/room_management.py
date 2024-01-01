@@ -3,7 +3,7 @@
 from flask import jsonify, request, abort
 from ..defines import Defines
 from ..decorators import require_privilege
-from ..__init__ import df
+from ..__init__ import get_df, get_app
 
 # Assume rooms are stored in a simple list for demonstration purposes
 rooms = ['room1', 'room2', 'room3']

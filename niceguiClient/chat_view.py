@@ -5,7 +5,7 @@ class ChatViewScreen():
     def __init__(self, api_url):
         self.api_url = api_url
         self.room_messages = ui.list([], height=300)
-        self.message_input = ui.textbox('Type your message:')
+        self.message_input = i = ui.textarea(value='Type your message:').props('clearable')
         self.send_message_button = ui.button('Send Message', on_click=self.send_message)
 
         super().__init__(

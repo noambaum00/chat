@@ -9,13 +9,19 @@ from .blueprint import *
 from defines import Defines
 #import defines
 
-defines.const = Defines()
+defines = Defines()
 
 # Register blueprints
 app.register_blueprint(user_management, url_prefix='/api')
 app.register_blueprint(room_management, url_prefix='/api')
 
 #Api.add_resource(ApiInfo, '/api/info', endpoint='api_info')
+
+def get_df():
+    return defines
+
+def get_app():
+    return defines.app
 
 if __name__ == '__main__':
     app.run(debug=True)
