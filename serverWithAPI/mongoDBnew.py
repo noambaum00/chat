@@ -39,10 +39,10 @@ class ChatDB:
     def get_messages(self, room_name):
         return self.rooms.find_one({"_id": room_name})["messages"]
 
-    def get_rooms(self, username):
+    def get_users_rooms(self, username):
         return self.users.find_one({"_id": username})["rooms"]
 
-    def get_users(self, room_name):
+    def get_users_in_room(self, room_name):
         return self.rooms.find_one({"_id": room_name})["users"]
 
         

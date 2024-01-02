@@ -6,6 +6,8 @@ ROLES = {
 }
 def init():
     global app
+    global db
     global jwt
     app=None
     jwt=None
+    db=None

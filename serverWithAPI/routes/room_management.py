@@ -12,6 +12,11 @@ room_blueprint = Blueprint('room_management', __name__)
 # Assume rooms are stored in a simple list for demonstration purposes
 rooms = ['room1', 'room2', 'room3']
 
+@user_blueprint.route('/api/rooms/<name>', methods=['POST'])
+@require_privilege('manage_users')
+def get_users(name):
+    return jsonify(users)# db get user in room 
+
 @room_blueprint.route('/api/rooms', methods=['GET'])
 @require_privilege('')
 def get_rooms():
