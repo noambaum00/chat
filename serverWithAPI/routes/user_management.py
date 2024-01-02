@@ -4,12 +4,11 @@ from flask import jsonify, request, abort
 from ..defines import app, ROLES
 from ..decorators import require_privilege
 from flask_jwt_extended import create_access_token
-# user_management.py
 from flask import Blueprint
 
+# Define your routes and other functionalities
 user_blueprint = Blueprint('user_management', __name__)
 
-# Define your routes and other functionalities
 
 # Assume rooms are stored in a simple list for demonstration purposes
 rooms = ['room1', 'room2', 'room3']
