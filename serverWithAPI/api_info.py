@@ -1,13 +1,16 @@
 # app/api_info.py
 
-from flask_restful import Resource
+#from flask_restful import Resource
 from flask import jsonify
 from flask_jwt_extended import jwt_required
-from ..defines import app
+from .defines import app
+from flask import Blueprint
 
-class ApiInfo(Resource):
-    @jwt_required(optional=True)
-    def get(self):
+info_blueprint = Blueprint('api_info', __name__)
+
+@info_blueprint.route('/', methods=['GET'])
+@jwt_required(optional=True)
+def get():
         routes = []
 
         for route in app.url_map.iter_rules():

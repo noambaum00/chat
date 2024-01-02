@@ -3,16 +3,21 @@
 from flask import jsonify, request, abort
 from ..defines import app, ROLES
 from ..decorators import require_privilege
+# user_management.py
+from flask import Blueprint
 
+room_blueprint = Blueprint('room_management', __name__)
+
+# Define your routes and other functionalities
 # Assume rooms are stored in a simple list for demonstration purposes
 rooms = ['room1', 'room2', 'room3']
 
-@app.route('/api/rooms', methods=['GET'])
-@require_privilege('    ')
+@room_blueprint.route('/api/rooms', methods=['GET'])
+@require_privilege('')
 def get_rooms():
     return jsonify(rooms)
 
-@app.route('/api/rooms', methods=['POST'])
+@room_blueprint.route('/api/rooms', methods=['POST'])
 @require_privilege('manage_rooms')
 def add_room():
     data = request.get_json()
@@ -25,7 +30,7 @@ def add_room():
     return jsonify({'message': f'Room {room_name} added successfully'})
 
 
-@app.route('/api/rooms/<room>', methods=['DELETE'])
+@room_blueprint.route('/api/rooms/<room>', methods=['DELETE'])
 @require_privilege('manage_rooms')
 def delete_room(room):
     if room not in rooms:
@@ -34,7 +39,7 @@ def delete_room(room):
     rooms.remove(room)
     return jsonify({'message': f'Room {room} deleted successfully'})
 
-@app.route('/api/rooms/<room>/messages', methods=['GET'])
+@room_blueprint.route('/api/rooms/<room>/messages', methods=['GET'])
 def get_room_messages(room):
     if room not in rooms:
         abort(404)  # Not Found - Room not exists
@@ -48,7 +53,7 @@ def get_room_messages(room):
 
     return jsonify(room_messages)
 
-@app.route('/api/rooms/<room>/messages', methods=['POST'])
+@room_blueprint.route('/api/rooms/<room>/messages', methods=['POST'])
 def send_message(room):
     if room not in rooms:
         abort(404)  # Not Found - Room not exists

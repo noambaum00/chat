@@ -7,17 +7,27 @@ from flask_jwt_extended import JWTManager
 
 defines.init()
 defines.app = Flask(__name__)
-defines.app.config['SECRET_KEY'] = 'secret_key_for_demo_purposes'
-defines.app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # Change this to a secure key in production
+defines.app.config['SECRET_KEY'] = '8bce79858b4c431a195654743417ddaa437b7b1b08da9f6bd3336ca0192188a6'
+defines.app.config['JWT_SECRET_KEY'] = '97675bc0bbf3960f40071b30b9cbc18a50cf259622dbbfc5b478ee2198bc7e1e'  # Change this to a secure key in production
 
 defines.jwt = JWTManager(defines.app)
 
 # Import and register blueprints
-from .routes import room_management, user_management
+from .routes.user_management import user_blueprint
+from .routes.room_management import room_blueprint
+from .api_info import info_blueprint
 
 # Register blueprints
-defines.app.register_blueprint(room_management, url_prefix='/api/room_management')  # Change the url_prefix if needed
-defines.app.register_blueprint(user_management, url_prefix='/api/user_management')  # Change the url_prefix if needed
+defines.app.register_blueprint(room_blueprint)  # Change the url_prefix if needed
+defines.app.register_blueprint(user_blueprint)  # Change the url_prefix if needed
+defines.app.register_blueprint(info_blueprint)  # Change the url_prefix if needed
+
+
+def run(debug):
+    defines.app.run(debug=True)
+    print(defines.app.url_map.iter_rules())
+   
+
 
 if __name__ == '__main__':
     defines.app.run(debug=True)
