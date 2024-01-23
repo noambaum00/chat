@@ -4,7 +4,9 @@ from . import defines
 from flask import Flask, jsonify, url_for
 from flask_restful import Resource
 from flask_jwt_extended import JWTManager
-from mongoDBnew import ChatDB
+from .mongoDBnew import ChatDB
+
+#from .mongoDBnew import ChatDB
 
 defines.init()
 defines.app = Flask(__name__)
@@ -24,7 +26,7 @@ defines.app.register_blueprint(user_blueprint)
 defines.app.register_blueprint(info_blueprint)
 
 defines.db = ChatDB()
-
+print(defines.app.url_map.iter_rules())
 def run(debug):
     defines.app.run(debug=True)
     print(defines.app.url_map.iter_rules())

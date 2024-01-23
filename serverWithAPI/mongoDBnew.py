@@ -1,59 +1,63 @@
 import datetime
-from pymongo import MongoClient
-
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 class ChatDB:
     def __init__(self):
-        self.client = MongoClient()
+        uri = "mongodb+srv://noambaum:noambaum@cluster0.ec4wlbs.mongodb.net/?retryWrites=true&w=majority"
+        # Create a new client and connect to the server
+        self.client = MongoClient(uri, server_api=ServerApi('1'))
         self.db = self.client.chat_db
         self.users = self.db.users
         self.rooms = self.db.rooms
         self.archive = self.db.archive
 
-    def add_user(self, username, password):
-        user = {"_id": username,
+    def add_user(self, username, password, role):
+        user = {"username": username,
                 "password": password,
+                "role" : role,
                 "rooms": []}
         self.users.insert_one(user)
 
     def add_room(self, room_name, admin):
-        room = {"_id": room_name,
+        room = {"roomname": room_name,
                 "admin": admin,
                 "users": [],
                 "messages": []}
         self.rooms.insert_one(room)
+        self.add_user_to_room(admin,room_name)
 
     def add_user_to_room(self, username, room_name):
-        self.rooms.update_one({"_id": room_name}, {"$push": {"users": username}})
-        self.users.update_one({"_id": username}, {"$push": {"rooms": room_name}})
+        self.rooms.update_one({"roomname": room_name}, {"$push": {"users": username}})
+        self.users.update_one({"username": username}, {"$push": {"rooms": room_name}})
 
     def remove_user_from_room(self, username, room_name):
-        self.rooms.update_one({"_id": room_name}, {"$pull": {"users": username}})
-        self.users.update_one({"_id": username}, {"$pull": {"rooms": room_name}})
+        self.rooms.update_one({"roomname": room_name}, {"$pull": {"users": username}})
+        self.users.update_one({"username": username}, {"$pull": {"rooms": room_name}})
 
     def add_message(self, username, room_name, message):
-        message = {"_id": username,
+        message = {"username": username,
                    "message": message,
                    "time": datetime.datetime.now()}
-        self.rooms.update_one({"_id": room_name}, {"$push": {"messages": message}})
+        self.rooms.update_one({"roomname": room_name}, {"$push": {"messages": message}})
 
     def get_messages(self, room_name):
-        return self.rooms.find_one({"_id": room_name})["messages"]
+        return self.rooms.find_one({"roomname": room_name})["messages"]
 
     def get_users_rooms(self, username):
-        return self.users.find_one({"_id": username})["rooms"]
+        return self.users.find_one({"username": username})["rooms"]
 
     def get_users_in_room(self, room_name):
-        return self.rooms.find_one({"_id": room_name})["users"]
+        return self.rooms.find_one({"roomname": room_name})["users"]
 
         
     def get_room_admin(self, room_name):
-        return self.rooms.find_one({"_id": room_name})["admin"]
+        return self.rooms.find_one({"roomname": room_name})["admin"]
 
 
     def archive_room(self, room_name):
-        room = self.rooms.find_one({"_id": room_name})
+        room = self.rooms.find_one({"roomname": room_name})
         self.archive.insert_one(room)
-        self.rooms.delete_one({"_id": room_name})
+        self.rooms.delete_one({"roomname": room_name})
 
     def get_archive(self):
         return self.archive.find()
@@ -65,20 +69,24 @@ class ChatDB:
         return self.rooms.find()
 
     def get_user(self, username):
-        return self.users.find_one({"_id": username})
+        return self.users.find_one({"username": username})
+    
+    def user_exists(self, username):
+        user = self.users.find_one({"username": username})
+        return bool(user)
 
     def get_admin(self, username):
-        return self.users.find_one({"_id": username})["isadmin"]
+        return self.users.find_one({"username": username})["isadmin"]
 
 
     def get_room(self, room_name):
-        return self.rooms.find_one({"_id": room_name})
+        return self.rooms.find_one({"roomname": room_name})
 
     def get_user_password(self, username):
-        return self.users.find_one({"_id": username})["password"]
+        return self.users.find_one({"username": username})["password"]
 
     def login(self, username, password):
-        user = self.users.find_one({"_id": username})
+        user = self.users.find_one({"username": username})
         if user is None:
             return False
         if user["password"] == password:
@@ -86,13 +94,13 @@ class ChatDB:
         return False
 
     def delete_user(self, username):
-        self.users.delete_one({"_id": username})
+        self.users.delete_one({"username": username})
 
     def delete_room(self, room_name):
-        self.rooms.delete_one({"_id": room_name})
+        self.rooms.delete_one({"username": room_name})
 
     def delete_archive(self, room_name):
-        self.archive.delete_one({"_id": room_name})
+        self.archive.delete_one({"username": room_name})
 
     def delete_all_users(self):
         self.users.delete_many({})
@@ -114,6 +122,5 @@ class ChatDB:
         
 if __name__ == "__main__":
     chat_db = ChatDB()
-    chat_db.delete_all()
-    chat_db.add_user("user1", "123")
-    print(chat_db.get_rooms_list())
+    chat_db.get_user("user1")
+    print(chat_db.get_user("user1"))
