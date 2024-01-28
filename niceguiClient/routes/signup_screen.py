@@ -6,8 +6,8 @@ from nicegui import ui
 async def signup_screen():
     ui.label('Sign In Screen'),
     ui.input('Username:'),
-    ui.password('Password:'),
-    ui.password('Confirm Password:'),
+    password = ui.input('Password:', password = True)
+    password = ui.input('Confirm Password:', password = True)
     ui.button('Sign In', on_click=signin_button_click),
     ui.button('Back', on_click=back_button_click),
 
@@ -19,12 +19,12 @@ async def signin_button_click():
     
     # Add API call for user registration here
     if password == confirm_password:
-        ui.message(f'Registering user {username}...')
+        ui.notify(f'Registering user {username}...')
     else:
-        ui.message('Passwords do not match.')
+        ui.notify('Passwords do not match.')
 
 async def back_button_click():
-    ui.message('Redirecting to Home Screen')
+    ui.notify('Redirecting to Home Screen')
 
 if __name__ in {"__main__", "__mp_main__"}:
     ui.run()

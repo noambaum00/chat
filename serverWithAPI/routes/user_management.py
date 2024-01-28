@@ -12,7 +12,7 @@ user_blueprint = Blueprint('user_management', __name__)
 
 @user_blueprint.route('/api/users', methods=['GET'])
 def get_users():
-    users_list = list(db.get_users_list())
+    users_list = db.get_users_list()
     return jsonify(users_list)
 
 @user_blueprint.route('/api/users', methods=['POST'])

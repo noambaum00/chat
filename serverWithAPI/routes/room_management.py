@@ -10,7 +10,7 @@ room_blueprint = Blueprint('room_management', __name__)
 
 @room_blueprint.route('/api/rooms', methods=['GET'])
 def get_rooms():
-    rooms_list = list(db.get_rooms_list())
+    rooms_list = db.get_rooms_list()
     return jsonify(rooms_list)
 
 @room_blueprint.route('/api/rooms', methods=['POST'])

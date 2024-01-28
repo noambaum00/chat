@@ -2,9 +2,10 @@
 import asyncio
 from nicegui import ui
 
+@ui.page("/chat_view")
 async def chat_view_screen():
-    ui.text('Chat View Screen'),
-    ui.chat(messages=get_chat_history()),
+    ui.label('Chat View Screen'),
+    ui.chat_message(messages=get_chat_history()),
     ui.textbox('Type your message:', on_change=message_input_change),
     ui.button('Send', on_click=send_button_click),
     ui.button('Back', on_click=back_button_click),
@@ -19,7 +20,7 @@ def get_chat_history():
     ]
 
 async def message_input_change(value):
-    ui.message(f'Typed message: {value}')
+    ui.notify(f'Typed message: {value}')
 
 async def send_button_click():
     typed_message = ui.get_value('Type your message:')
@@ -27,7 +28,7 @@ async def send_button_click():
     ui.chat_message(typed_message, name='User', stamp='now', sent=True)
 
 async def back_button_click():
-    ui.message('Redirecting to Chat Selection Screen')
+    ui.notify('Redirecting to Chat Selection Screen')
 
 if __name__ in {"__main__", "__mp_main__"}:
     ui.run()

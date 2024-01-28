@@ -63,10 +63,10 @@ class ChatDB:
         return self.archive.find()
 
     def get_users_list(self):
-        return self.users.find()
+        return [doc['username'] for doc in self.users.find({}, {'_id': 0, 'username': 1})]
 
     def get_rooms_list(self):
-        return self.rooms.find()
+        return [doc['roomname'] for doc in  self.rooms.find({}, {'_id': 0, 'roomname': 1})]
 
     def get_user(self, username):
         return self.users.find_one({"username": username})
