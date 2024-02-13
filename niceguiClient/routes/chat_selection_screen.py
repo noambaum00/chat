@@ -1,4 +1,5 @@
 # chat_selection_screen.py
+import requests
 
 import asyncio
 from nicegui import ui
@@ -15,21 +16,25 @@ async def chat_selection_screen():
 def get_room_list():
     # Add API call to get user rooms here
     # For now, returning sample data
-   
+    url = "http://localhost:5000/api/rooms"
+    return list(requests.get(url).json())
 
-   # return ['Room 1', 'Room 2', 'Room 3']
+
+
 
 async def room_dropdown_change(value):
     ui.notify(f'Selected room: {value}')
 
 async def join_button_click():
-    selected_room = ui.get_value('Select Room:')
-    new_room = ui.get_value('Join New Room:')
-    
-    if new_room:
+    #selected_room = ui.get_value('Select Room:')
+    #new_room = ui.get_value('Join New Room:')
+
+
+    if (room_name in list(requests.get(url).json())):
         create_new_room = ui.confirm('Room does not exist. Do you want to create a new room?')
         if create_new_room:
-            # Add API call to create new room here
+            response = requests.post(url, json = data_to_send)
+            ui.notify(str(response.json()))
             ui.notify(f'Creating new room: {new_room}')
     else:
         ui.notify(f'Joining existing room: {selected_room}')

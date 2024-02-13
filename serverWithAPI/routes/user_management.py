@@ -103,16 +103,19 @@ def signup():
     role = data.get('role', 'user')  # Default role is 'user'
 
     if not email:
-        abort(400)  # Bad Request - Email is required
+        abort(400, message= "Email is required")  # Bad Request - Email is required
+
+    if not password:
+        abort(400, message= "Password is required")  # Bad Request - Password is required
 
     existing_user = db.user_exists(username)
     if existing_user:
-        abort(400)  # Bad Request - User already exists
+        abort(420)  # Bad Request - User already exists
 
 
     db.add_user(username, password,role)
     access_token = create_access_token(identity={'username': username, 'role': role})
-    return jsonify(access_token=access_token, message=f'User {username} signed up successfully'), 201
+    return jsonify(access_token=access_token)#), message=f'User {username} signed up successfully'), 201
 
 
 @user_blueprint.route('/api/archive', methods=['GET'])

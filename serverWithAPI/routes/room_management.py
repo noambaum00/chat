@@ -17,6 +17,7 @@ def get_rooms():
 def add_room():
     data = request.get_json()
     room_name = data.get('room_name')
+    admin = data.get('admin')
 
     existing_room = db.get_room(room_name)
     if existing_room:
