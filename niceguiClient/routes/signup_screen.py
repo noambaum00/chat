@@ -70,8 +70,10 @@ async def signin_button_click():
         # Other errors
         error_message = response.get('message') if isinstance(response, dict) else 'Unknown error'
         ui.notify(f'Registration failed: {error_message}', color='red')
+
 async def back_button_click():
     ui.notify('Redirecting to Home Screen')
+    ui.open("/")
 
 if __name__ in {"__main__", "__mp_main__"}:
     ui.run(storage_secret='your_private_key')

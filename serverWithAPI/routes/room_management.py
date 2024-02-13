@@ -7,7 +7,7 @@ from ..mongoDBnew import ChatDB
 
 db = ChatDB()
 room_blueprint = Blueprint('room_management', __name__)
-
+#@require_privilege("")
 @room_blueprint.route('/api/rooms', methods=['GET'])
 def get_rooms():
     rooms_list = db.get_rooms_list()

@@ -54,6 +54,7 @@ async def login_button_click():
 
 async def back_button_click():
     ui.notify('Redirecting to Home Screen')
+    ui.open("/")
 
 if __name__ in {"__main__", "__mp_main__"}:
     ui.run(storage_secret='your_private_key')
