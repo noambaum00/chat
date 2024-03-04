@@ -99,6 +99,15 @@ def exit_room(username):
     return jsonify({'message': f'User {username} joined room {room_name}'})
 
 
+@user_blueprint.route('/api/users/<username>/rooms', methods=['GET'])
+def get_user_rooms(username):
+    user = db.get_user(username)
+    if not user:
+        abort(404)  # Not Found - User not exists
+    return jsonify(db.get_users_rooms(username))
+
+
+
 @user_blueprint.route('/api/users/login', methods=['POST'])
 def login():
     data = request.get_json()

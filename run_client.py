@@ -1,4 +1,4 @@
 import niceguiClient 
 
-if __name__ == '__main__':
-    niceguiClient.run(debug=True)
+if __name__ in {"__main__", "__mp_main__"}:
+    niceguiClient.run()

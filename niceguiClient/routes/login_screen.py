@@ -37,10 +37,11 @@ async def login_button_click():
         "username": username_value,
         "password": password_value
     }
-
-    # Make API request
-    response = api("POST", "api/users/login", data=mydata)
-
+    try:
+        # Make API request
+        response = api("POST", "api/users/login", data=mydata)
+    except:
+        ui.notify("error acured, try agan later", color="red")
     # Check for errors in the response
     if isinstance(response, dict) and 'access_token' in response:
         # Successful login

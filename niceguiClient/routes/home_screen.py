@@ -1,6 +1,6 @@
 # home_screen.py
 import asyncio
-from nicegui import ui
+from nicegui import ui, app
 
 import login_screen, signup_screen, password_reset_screen, chat_selection_screen, chat_view_screen
 

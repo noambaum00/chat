@@ -53,6 +53,10 @@ class ChatDB:
     def get_room_admin(self, room_name):
         return self.rooms.find_one({"roomname": room_name})["admin"]
 
+    def room_exists(self, room_name):
+        user = self.rooms.find_one({"roomname": room_name})
+        return bool(user)
+
 
     def archive_room(self, room_name):
         room = self.rooms.find_one({"roomname": room_name})

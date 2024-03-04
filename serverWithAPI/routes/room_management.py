@@ -57,3 +57,7 @@ def send_message(room):
     db.add_message(user, room, message)
 
     return jsonify({'message': 'Message sent successfully'})
+
+@room_blueprint.route('/api/roomExise/<room>', methods=['GET'])
+def room_exist(room):
+    return db.room_exists(room)

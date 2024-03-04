@@ -2,21 +2,22 @@
 import asyncio
 from nicegui import ui
 
-@ui.page("/chat_view")
+@ui.page("/chat_view/<url_room_name>")
 async def chat_view_screen():
     ui.label('Chat View Screen'),
-    ui.chat_message(messages=get_chat_history()),
-    ui.textbox('Type your message:', on_change=message_input_change),
-    ui.button('Send', on_click=send_button_click),
-    ui.button('Back', on_click=back_button_click),
+    if allow_in_room():
+        ui.chat_message(messages=get_chat_history()),
+        ui.textbox('Type your message:', on_change=message_input_change)
+        ui.button('Send', on_click=send_button_click)
+        ui.button('Back', on_click=back_button_click)
 
 
 def get_chat_history():
     # Add API call to get chat history here
     # For now, returning sample data
     return [
-        dict(text='Hello NiceGUI!', name='Robot', stamp='now', avatar='https://robohash.org/ui'),
-        dict(text='Hi there!', name='User', stamp='now', avatar='https://robohash.org/user'),
+        dict(text='Hello NiceGUI!', name='Robot', stamp='now'),
+        dict(text='Hi there!', name='User', stamp='now'),
     ]
 
 async def message_input_change(value):
@@ -29,6 +30,7 @@ async def send_button_click():
 
 async def back_button_click():
     ui.notify('Redirecting to Chat Selection Screen')
+    ui.open("chat_list")
 
 if __name__ in {"__main__", "__mp_main__"}:
     ui.run()
